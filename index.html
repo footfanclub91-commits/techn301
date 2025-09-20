@@ -1,72 +1,129 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Techn301 — Collège Charles Péguy</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Techn301 — Collège Charles Péguy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --accent: #2b7cff;
+      --bg: #f4f6f8;
+      --card: #fff;
+    }
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      margin: 0;
+      background: var(--bg);
+    }
+    .hidden { display: none; }
+
+    /* écran d’accueil */
+    #welcome {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(160deg, #0f172a, #14213d);
+      color: white;
+    }
+    #welcome .card {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 30px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      text-align: center;
+      animation: fadeIn 0.8s ease;
+    }
+    #welcome h1 { margin: 0 0 10px; }
+    #startBtn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #startBtn:hover { background: #1b57cc; }
+
+    /* page de connexion */
+    #loginPage {
+      display: none;
+      padding: 30px;
+      animation: fadeIn 0.8s ease;
+    }
+    .login-box {
+      max-width: 400px;
+      margin: 60px auto;
+      background: var(--card);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .login-box h2 {
+      margin-top: 0;
+      text-align: center;
+      color: #333;
+    }
+    label { font-size: 14px; color: #444; }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button.loginBtn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.loginBtn:hover { background: #1b57cc; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
 
-<!-- Splash -->
-<div id="splash">
-  <div class="card">
-    <h1>Techn301 — Collège Charles Péguy</h1>
-    <p>Bienvenue ! Connectez-vous avec votre identifiant et votre PIN provisoire.</p>
-    <button id="enterBtn">Entrer →</button>
+  <!-- Page d’accueil -->
+  <div id="welcome">
+    <div class="card">
+      <h1>Techn301 — Collège Charles Péguy</h1>
+      <p>Bienvenue, cliquez ci-dessous pour accéder à l’espace de connexion.</p>
+      <button id="startBtn">Entrer</button>
+    </div>
   </div>
-</div>
 
-<!-- Login -->
-<div class="card" id="loginCard" style="display:none;">
-  <h2>Connexion Techn301</h2>
-  <label>Identifiant : <input type="text" id="loginId"></label><br><br>
-  <label>PIN provisoire : <input type="password" id="loginPin"></label><br><br>
-  <button id="loginBtn">Se connecter</button>
-  <div id="loginMsg"></div>
-</div>
+  <!-- Page de connexion -->
+  <div id="loginPage">
+    <div class="login-box">
+      <h2>Connexion</h2>
+      <form>
+        <label for="login">Identifiant</label>
+        <input type="text" id="login" placeholder="ex : e.benikiker301" required>
 
-<!-- App -->
-<div class="container" id="app" style="display:none;">
-  <div class="card">
-    <div class="topbar">
-      <div class="title">Techn301 — Collège Charles Péguy</div>
+        <label for="pin">PIN (4 chiffres)</label>
+        <input type="password" id="pin" maxlength="4" required>
+
+        <button type="submit" class="loginBtn">Se connecter</button>
+      </form>
     </div>
-
-    <div class="controls">
-      <label>Filtre : </label>
-      <select id="filterSel">
-        <option value="all">Tous</option>
-        <option value="warning">Avec heure de colle</option>
-      </select>
-      <button id="resetAll">Réinitialiser tous les compteurs</button>
-      <button id="exportCSV">Exporter CSV</button>
-      <input type="text" id="searchInput" placeholder="Rechercher élève..." style="margin-left:12px;padding:4px;">
-    </div>
-
-    <div style="overflow:auto;margin-top:8px">
-      <table id="grid">
-        <thead>
-          <tr>
-            <th>Élève</th>
-            <th>Participation</th>
-            <th>Bavardages</th>
-            <th>Agitation</th>
-            <th>Non-respect matériel</th>
-            <th>Cahier non à jour</th>
-            <th>Total problèmes</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-    <div class="footer">Designé par Elias BENIKIKER</div>
   </div>
-</div>
 
-<script src="app.js"></script>
+  <script>
+    // Passage accueil → login
+    document.getElementById("startBtn").addEventListener("click", function() {
+      document.getElementById("welcome").style.display = "none";
+      document.getElementById("loginPage").style.display = "block";
+    });
+  </script>
 </body>
 </html>
-
