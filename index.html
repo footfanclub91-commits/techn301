@@ -76,13 +76,21 @@ let currentUser = null;
 // désactiver le bouton login tant que le JSON n'est pas chargé
 loginForm.querySelector("button").disabled = true;
 
-// fetch JSON
+// fetch JSON et charger PIN sauvegardés
 fetch('users.json')
   .then(res => res.json())
   .then(data => {
     USERS = data;
+    USERS.eleves.forEach(u => {
+      const saved = localStorage.getItem(u.id);
+      if(saved){
+        const parsed = JSON.parse(saved);
+        u.pin = parsed.pin;
+        u.firstLogin = parsed.firstLogin;
+      }
+    });
     USERS.eleves.sort((a,b)=>a.name.localeCompare(b.name));
-    console.log("USERS chargés:", USERS);
+    console.log("USERS chargés :", USERS);
     loginForm.querySelector("button").disabled = false;
     loadingDiv.style.display = "none";
   })
@@ -136,6 +144,10 @@ function changePin(){
   if(newPin.length>=4){
     currentUser.pin=newPin;
     currentUser.firstLogin=false;
+
+    // sauvegarde dans localStorage
+    localStorage.setItem(currentUser.id, JSON.stringify(currentUser));
+
     alert("PIN modifié !");
     document.getElementById("changePinDiv").classList.add("hidden");
     document.getElementById("newPin").value="";
@@ -178,6 +190,10 @@ function resetPin(index){
   const newPin = prompt("Entrez un nouveau PIN pour cet élève :");
   if(newPin && newPin.length>=4){
     USERS.eleves[index].pin=newPin;
+
+    // sauvegarde dans localStorage
+    localStorage.setItem(USERS.eleves[index].id, JSON.stringify(USERS.eleves[index]));
+
     renderAdminTable();
   }
 }
@@ -185,4 +201,3 @@ function resetPin(index){
 
 </body>
 </html>
-
