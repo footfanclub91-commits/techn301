@@ -1,129 +1,152 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Techn301 — Collège Charles Péguy</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    :root {
-      --accent: #2b7cff;
-      --bg: #f4f6f8;
-      --card: #fff;
-    }
-    body {
-      font-family: system-ui, Arial, sans-serif;
-      margin: 0;
-      background: var(--bg);
-    }
-    .hidden { display: none; }
-
-    /* écran d’accueil */
-    #welcome {
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(160deg, #0f172a, #14213d);
-      color: white;
-    }
-    #welcome .card {
-      background: rgba(255, 255, 255, 0.08);
-      padding: 30px;
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      text-align: center;
-      animation: fadeIn 0.8s ease;
-    }
-    #welcome h1 { margin: 0 0 10px; }
-    #startBtn {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    #startBtn:hover { background: #1b57cc; }
-
-    /* page de connexion */
-    #loginPage {
-      display: none;
-      padding: 30px;
-      animation: fadeIn 0.8s ease;
-    }
-    .login-box {
-      max-width: 400px;
-      margin: 60px auto;
-      background: var(--card);
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    }
-    .login-box h2 {
-      margin-top: 0;
-      text-align: center;
-      color: #333;
-    }
-    label { font-size: 14px; color: #444; }
-    input {
-      width: 100%;
-      padding: 8px;
-      margin: 6px 0 14px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button.loginBtn {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      background: var(--accent);
-      color: #fff;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button.loginBtn:hover { background: #1b57cc; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Techn301 — Collège Charles Péguy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Page d’accueil -->
-  <div id="welcome">
-    <div class="card">
-      <h1>Techn301 — Collège Charles Péguy</h1>
-      <p>Bienvenue, cliquez ci-dessous pour accéder à l’espace de connexion.</p>
-      <button id="startBtn">Entrer</button>
-    </div>
+<div id="welcome">
+  <div class="card">
+    <h1>Techn301 — Collège Charles Péguy</h1>
+    <p>Bienvenue, cliquez ci-dessous pour accéder à l’espace de connexion.</p>
+    <button id="startBtn">Entrer</button>
   </div>
+</div>
 
-  <!-- Page de connexion -->
-  <div id="loginPage">
-    <div class="login-box">
-      <h2>Connexion</h2>
-      <form>
-        <label for="login">Identifiant</label>
-        <input type="text" id="login" placeholder="ex : e.benikiker301" required>
-
-        <label for="pin">PIN (4 chiffres)</label>
-        <input type="password" id="pin" maxlength="4" required>
-
-        <button type="submit" class="loginBtn">Se connecter</button>
-      </form>
-    </div>
+<div id="loginPage">
+  <div class="login-box">
+    <h2>Connexion</h2>
+    <form id="loginForm">
+      <label for="login">Identifiant</label>
+      <input type="text" id="login" placeholder="ex : e.benikiker" required>
+      <label for="pin">PIN</label>
+      <input type="password" id="pin" maxlength="10" required>
+      <button type="submit" class="loginBtn">Se connecter</button>
+    </form>
   </div>
+</div>
 
-  <script>
-    // Passage accueil → login
-    document.getElementById("startBtn").addEventListener("click", function() {
-      document.getElementById("welcome").style.display = "none";
-      document.getElementById("loginPage").style.display = "block";
-    });
-  </script>
+<div id="studentPage">
+  <div class="card">
+    <h2 id="studentName"></h2>
+    <p id="studentMessage"></p>
+    <div id="changePinDiv" class="hidden">
+      <label>Nouveau PIN :</label>
+      <input type="password" id="newPin" maxlength="10">
+      <button onclick="changePin()">Valider</button>
+    </div>
+    <button onclick="logout()">Se déconnecter</button>
+  </div>
+</div>
+
+<div id="adminPage">
+  <h2>Page Admin — Gestion des PIN</h2>
+  <table>
+    <thead><tr><th>Nom</th><th>ID</th><th>PIN</th><th>Actions</th></tr></thead>
+    <tbody id="adminTableBody"></tbody>
+  </table>
+  <button onclick="logoutAdmin()">Se déconnecter</button>
+</div>
+
+<script>
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  document.getElementById("welcome").style.display="none";
+  document.getElementById("loginPage").style.display="block";
+});
+
+let USERS=[];
+fetch('users.json')
+  .then(res=>res.json())
+  .then(data=>{
+    USERS=data;
+    USERS.eleves.sort((a,b)=>a.name.localeCompare(b.name));
+  });
+
+let currentUser=null;
+
+document.getElementById("loginForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  const login=document.getElementById("login").value.trim();
+  const pin=document.getElementById("pin").value.trim();
+
+  if(login==="admin" && pin==="0000"){
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("adminPage").style.display="block";
+    renderAdminTable();
+    return;
+  }
+
+  let user = USERS.eleves.find(u=>u.id===login && u.pin===pin);
+  if(!user) user = USERS.prof.find(u=>u.id===login && u.pin===pin);
+
+  if(user){
+    currentUser=user;
+    document.getElementById("loginPage").style.display="none";
+    if(USERS.prof.includes(user)){
+      document.getElementById("adminPage").style.display="block";
+      renderAdminTable();
+    }else{
+      document.getElementById("studentPage").style.display="block";
+      document.getElementById("studentName").textContent=`Bienvenue, ${user.name.split(" ")[0]} !`;
+      document.getElementById("studentMessage").textContent=`Bonjour ${user.name.split(" ")[0]} !`;
+      if(user.firstLogin){
+        document.getElementById("changePinDiv").classList.remove("hidden");
+      }
+    }
+  } else {
+    alert("Identifiant ou PIN incorrect.");
+  }
+});
+
+function changePin(){
+  const newPin = document.getElementById("newPin").value.trim();
+  if(newPin.length>=4){
+    currentUser.pin=newPin;
+    currentUser.firstLogin=false;
+    alert("PIN modifié !");
+    document.getElementById("changePinDiv").classList.add("hidden");
+    document.getElementById("newPin").value="";
+  }else{
+    alert("PIN doit faire au moins 4 caractères");
+  }
+}
+
+function logout(){
+  document.getElementById("studentPage").style.display="none";
+  document.getElementById("loginPage").style.display="block";
+  document.getElementById("login").value="";
+  document.getElementById("pin").value="";
+  document.getElementById("changePinDiv").classList.add("hidden");
+}
+
+function logoutAdmin(){
+  document.getElementById("adminPage").style.display="none";
+  document.getElementById("loginPage").style.display="block";
+}
+
+function renderAdminTable(){
+  const tbody = document.getElementById("adminTableBody");
+  tbody.innerHTML="";
+  USERS.eleves.forEach((s,i)=>{
+    tbody.innerHTML+=`<tr>
+      <td>${s.name}</td>
+      <td>${s.id}</td>
+      <td>${s.pin}</td>
+      <td><button onclick="resetPin(${i})">Réinitialiser</button></td>
+    </tr>`;
+  });
+}
+
+function resetPin(index){
+  const newPin = prompt("Entrez un nouveau PIN :");
+  if(newPin && newPin.length>=4){
+    USERS.eleves[index].pin=newPin;
+    renderAdminTable();
+  }
+}
+</script>
 </body>
 </html>
