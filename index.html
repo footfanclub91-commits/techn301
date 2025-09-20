@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Techn301 — Collège Charles Péguy</title>
+<title>Techn301 — Collège Charles Péguy (v0.2)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -55,13 +55,25 @@
 
 <!-- Page admin -->
 <div id="adminPage">
-  <h2>Page Admin — Gestion des PIN</h2>
+  <h2>Page Prof — Gestion de la classe</h2>
+
+  <!-- Création séance -->
+  <div class="card">
+    <h3>Créer une séance</h3>
+    <label>Date :</label>
+    <input type="date" id="seanceDate">
+    <button onclick="createSeance()">Créer séance</button>
+  </div>
+
+  <!-- Liste élèves -->
+  <h3>Liste des élèves</h3>
   <table>
     <thead>
-      <tr><th>Nom</th><th>ID</th><th>PIN</th><th>Actions</th></tr>
+      <tr><th>Nom</th><th>ID</th><th>PIN</th><th>Remarques</th><th>Actions</th></tr>
     </thead>
     <tbody id="adminTableBody"></tbody>
   </table>
+
   <button onclick="logoutAdmin()">Se déconnecter</button>
 </div>
 
@@ -72,11 +84,12 @@ const loadingDiv = document.getElementById("loading");
 
 let USERS = null;
 let currentUser = null;
+let seances = [];
 
-// désactiver le bouton login tant que le JSON n'est pas chargé
+// désactiver login tant que JSON pas chargé
 loginForm.querySelector("button").disabled = true;
 
-// fetch JSON et charger PIN sauvegardés
+// fetch JSON
 fetch('users.json')
   .then(res => res.json())
   .then(data => {
@@ -87,10 +100,12 @@ fetch('users.json')
         const parsed = JSON.parse(saved);
         u.pin = parsed.pin;
         u.firstLogin = parsed.firstLogin;
+        u.remarques = parsed.remarques || [];
+      } else {
+        u.remarques = [];
       }
     });
     USERS.eleves.sort((a,b)=>a.name.localeCompare(b.name));
-    console.log("USERS chargés :", USERS);
     loginForm.querySelector("button").disabled = false;
     loadingDiv.style.display = "none";
   })
@@ -138,16 +153,21 @@ loginForm.addEventListener("submit", function(e){
   }
 });
 
+// Création séance
+function createSeance(){
+  const date = document.getElementById("seanceDate").value;
+  if(!date) return alert("Choisissez une date !");
+  seances.push(date);
+  alert("Séance du "+date+" créée !");
+}
+
 // Changement PIN élève
 function changePin(){
   const newPin = document.getElementById("newPin").value.trim();
   if(newPin.length>=4){
     currentUser.pin=newPin;
     currentUser.firstLogin=false;
-
-    // sauvegarde dans localStorage
     localStorage.setItem(currentUser.id, JSON.stringify(currentUser));
-
     alert("PIN modifié !");
     document.getElementById("changePinDiv").classList.add("hidden");
     document.getElementById("newPin").value="";
@@ -180,20 +200,34 @@ function renderAdminTable(){
       <td>${s.name}</td>
       <td>${s.id}</td>
       <td>${s.pin}</td>
-      <td><button onclick="resetPin(${i})">Réinitialiser</button></td>
+      <td>
+        <ul>${s.remarques.map(r=>"<li>"+r+"</li>").join("")}</ul>
+        <textarea id="remarque_${i}" placeholder="Nouvelle remarque..."></textarea>
+        <button onclick="addRemarque(${i})">Ajouter</button>
+      </td>
+      <td><button onclick="resetPin(${i})">Réinitialiser PIN</button></td>
     </tr>`;
   });
 }
 
-// Réinitialisation PIN par admin
+// Ajouter remarque
+function addRemarque(index){
+  const textarea = document.getElementById("remarque_"+index);
+  const text = textarea.value.trim();
+  if(text){
+    USERS.eleves[index].remarques.push(text);
+    localStorage.setItem(USERS.eleves[index].id, JSON.stringify(USERS.eleves[index]));
+    textarea.value="";
+    renderAdminTable();
+  }
+}
+
+// Réinitialisation PIN
 function resetPin(index){
   const newPin = prompt("Entrez un nouveau PIN pour cet élève :");
   if(newPin && newPin.length>=4){
     USERS.eleves[index].pin=newPin;
-
-    // sauvegarde dans localStorage
     localStorage.setItem(USERS.eleves[index].id, JSON.stringify(USERS.eleves[index]));
-
     renderAdminTable();
   }
 }
