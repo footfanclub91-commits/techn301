@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Techn301 — Collège Charles Péguy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Splash -->
+<div id="splash">
+  <div class="card">
+    <h1>Techn301 — Collège Charles Péguy</h1>
+    <p>Bienvenue ! Connectez-vous avec votre identifiant et votre PIN provisoire.</p>
+    <button id="enterBtn">Entrer →</button>
+  </div>
+</div>
+
+<!-- Login -->
+<div class="card" id="loginCard" style="display:none;">
+  <h2>Connexion Techn301</h2>
+  <label>Identifiant : <input type="text" id="loginId"></label><br><br>
+  <label>PIN provisoire : <input type="password" id="loginPin"></label><br><br>
+  <button id="loginBtn">Se connecter</button>
+  <div id="loginMsg"></div>
+</div>
+
+<!-- App -->
+<div class="container" id="app" style="display:none;">
+  <div class="card">
+    <div class="topbar">
+      <div class="title">Techn301 — Collège Charles Péguy</div>
+    </div>
+
+    <div class="controls">
+      <label>Filtre : </label>
+      <select id="filterSel">
+        <option value="all">Tous</option>
+        <option value="warning">Avec heure de colle</option>
+      </select>
+      <button id="resetAll">Réinitialiser tous les compteurs</button>
+      <button id="exportCSV">Exporter CSV</button>
+      <input type="text" id="searchInput" placeholder="Rechercher élève..." style="margin-left:12px;padding:4px;">
+    </div>
+
+    <div style="overflow:auto;margin-top:8px">
+      <table id="grid">
+        <thead>
+          <tr>
+            <th>Élève</th>
+            <th>Participation</th>
+            <th>Bavardages</th>
+            <th>Agitation</th>
+            <th>Non-respect matériel</th>
+            <th>Cahier non à jour</th>
+            <th>Total problèmes</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="footer">Designé par Elias BENIKIKER</div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
+
