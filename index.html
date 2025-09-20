@@ -8,6 +8,15 @@
 </head>
 <body>
 
+<!-- Écran de chargement -->
+<div id="loading">
+  <div class="card">
+    <h2>Chargement des données...</h2>
+    <p>Veuillez patienter.</p>
+  </div>
+</div>
+
+<!-- Page d’accueil -->
 <div id="welcome">
   <div class="card">
     <h1>Techn301 — Collège Charles Péguy</h1>
@@ -16,6 +25,7 @@
   </div>
 </div>
 
+<!-- Page de connexion -->
 <div id="loginPage">
   <div class="login-box">
     <h2>Connexion</h2>
@@ -29,6 +39,7 @@
   </div>
 </div>
 
+<!-- Page élève -->
 <div id="studentPage">
   <div class="card">
     <h2 id="studentName"></h2>
@@ -42,65 +53,84 @@
   </div>
 </div>
 
+<!-- Page admin -->
 <div id="adminPage">
   <h2>Page Admin — Gestion des PIN</h2>
   <table>
-    <thead><tr><th>Nom</th><th>ID</th><th>PIN</th><th>Actions</th></tr></thead>
+    <thead>
+      <tr><th>Nom</th><th>ID</th><th>PIN</th><th>Actions</th></tr>
+    </thead>
     <tbody id="adminTableBody"></tbody>
   </table>
   <button onclick="logoutAdmin()">Se déconnecter</button>
 </div>
 
 <script>
-document.getElementById("startBtn").addEventListener("click", ()=>{
+const welcomeBtn = document.getElementById("startBtn");
+const loginForm = document.getElementById("loginForm");
+const loadingDiv = document.getElementById("loading");
+
+let USERS = null;
+let currentUser = null;
+
+// désactiver le bouton login tant que le JSON n'est pas chargé
+loginForm.querySelector("button").disabled = true;
+
+// fetch JSON
+fetch('users.json')
+  .then(res => res.json())
+  .then(data => {
+    USERS = data;
+    USERS.eleves.sort((a,b)=>a.name.localeCompare(b.name));
+    console.log("USERS chargés:", USERS);
+    loginForm.querySelector("button").disabled = false;
+    loadingDiv.style.display = "none";
+  })
+  .catch(err => {
+    alert("Erreur lors du chargement des données !");
+    console.error(err);
+  });
+
+// Accueil → Login
+welcomeBtn.addEventListener("click", ()=>{
   document.getElementById("welcome").style.display="none";
   document.getElementById("loginPage").style.display="block";
 });
 
-let USERS=[];
-fetch('users.json')
-  .then(res=>res.json())
-  .then(data=>{
-    USERS=data;
-    USERS.eleves.sort((a,b)=>a.name.localeCompare(b.name));
-  });
-
-let currentUser=null;
-
-document.getElementById("loginForm").addEventListener("submit",function(e){
+// Connexion
+loginForm.addEventListener("submit", function(e){
   e.preventDefault();
-  const login=document.getElementById("login").value.trim();
-  const pin=document.getElementById("pin").value.trim();
+  if(!USERS) return alert("Les utilisateurs ne sont pas encore chargés.");
 
-  if(login==="admin" && pin==="0000"){
-    document.getElementById("loginPage").style.display="none";
-    document.getElementById("adminPage").style.display="block";
-    renderAdminTable();
-    return;
-  }
+  const login = document.getElementById("login").value.trim();
+  const pin = document.getElementById("pin").value.trim();
 
   let user = USERS.eleves.find(u=>u.id===login && u.pin===pin);
   if(!user) user = USERS.prof.find(u=>u.id===login && u.pin===pin);
 
   if(user){
-    currentUser=user;
+    currentUser = user;
     document.getElementById("loginPage").style.display="none";
+
     if(USERS.prof.includes(user)){
       document.getElementById("adminPage").style.display="block";
       renderAdminTable();
-    }else{
+    } else {
       document.getElementById("studentPage").style.display="block";
-      document.getElementById("studentName").textContent=`Bienvenue, ${user.name.split(" ")[0]} !`;
-      document.getElementById("studentMessage").textContent=`Bonjour ${user.name.split(" ")[0]} !`;
+      document.getElementById("studentName").textContent = `Bienvenue, ${user.name.split(" ")[0]} !`;
+      document.getElementById("studentMessage").textContent = `Bonjour ${user.name.split(" ")[0]} !`;
+
       if(user.firstLogin){
         document.getElementById("changePinDiv").classList.remove("hidden");
       }
     }
+
   } else {
     alert("Identifiant ou PIN incorrect.");
   }
 });
 
+// Changement PIN élève
 function changePin(){
   const newPin = document.getElementById("newPin").value.trim();
   if(newPin.length>=4){
@@ -109,11 +139,12 @@ function changePin(){
     alert("PIN modifié !");
     document.getElementById("changePinDiv").classList.add("hidden");
     document.getElementById("newPin").value="";
-  }else{
+  } else {
     alert("PIN doit faire au moins 4 caractères");
   }
 }
 
+// Déconnexion élève
 function logout(){
   document.getElementById("studentPage").style.display="none";
   document.getElementById("loginPage").style.display="block";
@@ -122,11 +153,13 @@ function logout(){
   document.getElementById("changePinDiv").classList.add("hidden");
 }
 
+// Déconnexion admin
 function logoutAdmin(){
   document.getElementById("adminPage").style.display="none";
   document.getElementById("loginPage").style.display="block";
 }
 
+// Table admin
 function renderAdminTable(){
   const tbody = document.getElementById("adminTableBody");
   tbody.innerHTML="";
@@ -140,13 +173,16 @@ function renderAdminTable(){
   });
 }
 
+// Réinitialisation PIN par admin
 function resetPin(index){
-  const newPin = prompt("Entrez un nouveau PIN :");
+  const newPin = prompt("Entrez un nouveau PIN pour cet élève :");
   if(newPin && newPin.length>=4){
     USERS.eleves[index].pin=newPin;
     renderAdminTable();
   }
 }
 </script>
+
 </body>
 </html>
+
