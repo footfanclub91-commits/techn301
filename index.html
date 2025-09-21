@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Plateforme Classe</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Page de connexion -->
+  <div id="login-container" class="glass-box">
+    <h1>Bienvenue 👋</h1>
+    <form id="login-form">
+      <input type="text" id="userId" placeholder="Identifiant" required>
+      <input type="password" id="userPin" placeholder="PIN" required>
+      <button type="submit" class="btn">Connexion</button>
+    </form>
+    <p id="login-error"></p>
+  </div>
+
+  <!-- Espace élève -->
+  <div id="eleve-container" class="hidden glass-box">
+    <h2>Espace Élève</h2>
+    <p id="eleve-info"></p>
+    <ul>
+      <li>Total participations : <span id="total-participation">0</span></li>
+      <li>Bavardages : <span id="bavardages">0</span></li>
+      <li>Agitations : <span id="agitations">0</span></li>
+      <li>Remarques : <span id="remarques">0</span></li>
+      <li>Incidents contestés : <span id="contestations">0</span></li>
+      <li>Nombre de séances : <span id="seances">0</span></li>
+      <li>Travaux : <span id="travaux">Aucun</span></li>
+    </ul>
+    <h3>Messagerie contestation</h3>
+    <textarea id="contest-message" placeholder="Expliquer la contestation..."></textarea>
+    <button id="send-contest" class="btn">Envoyer au professeur</button>
+    <button onclick="logout()" class="btn">Déconnexion</button>
+  </div>
+
+  <!-- Espace prof -->
+  <div id="prof-container" class="hidden glass-box">
+    <h2>Espace Professeur</h2>
+    <input type="text" id="search-eleve" placeholder="Rechercher un élève...">
+    <div id="eleve-list"></div>
+    <h3>Messagerie</h3>
+    <textarea id="prof-message" placeholder="Écrire un message privé..."></textarea>
+    <button id="send-prof-message" class="btn">Envoyer</button>
+    <button onclick="logout()" class="btn">Déconnexion</button>
+  </div>
+
+  <!-- Espace admin -->
+  <div id="admin-container" class="hidden glass-box">
+    <h2>Espace Admin</h2>
+    <button id="create-eleve" class="btn">Créer un élève</button>
+    <h3>Messages reçus (bugs & contestations)</h3>
+    <div id="admin-messages"></div>
+    <button onclick="logout()" class="btn">Déconnexion</button>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let usersData = {};
+
+    // Charger les utilisateurs
+    fetch("users.json")
+      .then(res => res.json())
+      .then(data => usersData = data);
+
+    // Connexion
+    document.getElementById("login-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const id = document.getElementById("userId").value;
+      const pin = document.getElementById("userPin").value;
+
+      let user = [...usersData.eleves, ...usersData.prof].find(u => u.id === id && u.pin === pin);
+
+      if(user){
+        currentUser = user;
+        document.getElementById("login-container").classList.add("hidden");
+
+        if(usersData.eleves.find(u => u.id === user.id)){
+          document.getElementById("eleve-container").classList.remove("hidden");
+          document.getElementById("eleve-info").innerText = `Bienvenue ${user.name}`;
+        }
+        else if(user.id === "admindemo"){
+          document.getElementById("admin-container").classList.remove("hidden");
+        }
+        else{
+          document.getElementById("prof-container").classList.remove("hidden");
+        }
+      } else {
+        document.getElementById("login-error").innerText = "Identifiants incorrects.";
+      }
+    });
+
+    function logout(){
+      currentUser = null;
+      document.querySelectorAll(".glass-box").forEach(box => box.classList.add("hidden"));
+      document.getElementById("login-container").classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
