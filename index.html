@@ -9,7 +9,12 @@
 <body>
 <div class="background"></div>
 
-<div class="glass-card" id="loginCard">
+<div id="loadingScreen">
+<h1>Chargement en cours...</h1>
+<div class="loader"></div>
+</div>
+
+<div class="glass-card" id="loginCard" style="display:none">
 <h1>Connexion — Classe 301</h1>
 <input type="text" id="userId" placeholder="Identifiant">
 <input type="password" id="userPin" placeholder="PIN">
@@ -69,16 +74,25 @@
 
 <script>
 let users=null;
-fetch('user.json').then(r=>r.json()).then(d=>{users=d; initState();});
 let state={}, seances=[];
-function initState(){users.eleves.forEach(e=>{state[e.id]={participation:0,bav:0,agi:0,lutin:true,obs:""};});}
-
+const loadingScreen=document.getElementById('loadingScreen');
 const loginCard=document.getElementById('loginCard');
 const eleveCard=document.getElementById('eleveCard');
 const profCard=document.getElementById('profCard');
 let currentUser=null;
 
+fetch('user.json')
+.then(r=>r.json())
+.then(d=>{
+users=d;
+users.eleves.forEach(e=>{state[e.id]={participation:0,bav:0,agi:0,lutin:true,obs:""};});
+loadingScreen.style.display='none';
+loginCard.style.display='block';
+})
+.catch(()=>{loadingScreen.innerHTML="<h1>Erreur : user.json introuvable</h1>";});
+
 document.getElementById('loginBtn').addEventListener('click',()=>{
+if(!users){document.getElementById('errorMsg').textContent="JSON non chargé"; return;}
 const id=document.getElementById('userId').value.trim();
 const pin=document.getElementById('userPin').value.trim();
 let found=null;
@@ -100,8 +114,7 @@ renderEleveTable();
 });
 
 function renderEleveTable(){
-const tbody=document.getElementById('eleveTbody');
-tbody.innerHTML='';
+const tbody=document.getElementById('eleveTbody'); tbody.innerHTML='';
 const s=state[currentUser.id];
 const tr=document.createElement('tr');
 tr.innerHTML=`<td>${s.participation}</td><td>${s.bav}</td><td>${s.agi}</td><td>${s.lutin?'Oui':'Non'}</td><td>${s.bav+s.agi+(s.lutin?0:1)}</td>`;
@@ -109,11 +122,9 @@ tbody.appendChild(tr);
 }
 
 function renderProfTable(){
-const tbody=document.getElementById('elevesTbody');
-tbody.innerHTML='';
+const tbody=document.getElementById('elevesTbody'); tbody.innerHTML='';
 users.eleves.forEach(e=>{
-const s=state[e.id];
-const tr=document.createElement('tr');
+const s=state[e.id]; const tr=document.createElement('tr');
 tr.innerHTML=`<td>${e.name}</td>
 <td><input type="number" value="${s.participation}" min="0" data-id="${e.id}" data-key="participation"></td>
 <td><input type="number" value="${s.bav}" min="0" data-id="${e.id}" data-key="bav"></td>
@@ -125,7 +136,7 @@ tbody.appendChild(tr);
 });
 document.querySelectorAll('#elevesTbody input').forEach(input=>{
 input.addEventListener('change',()=>{
-const id=input.dataset.id;const key=input.dataset.key;
+const id=input.dataset.id; const key=input.dataset.key;
 if(key==='lutin') state[id][key]=input.checked;
 else if(key==='participation'||key==='bav'||key==='agi') state[id][key]=parseInt(input.value)||0;
 else state[id][key]=input.value;
@@ -157,15 +168,14 @@ renderSeances();
 });
 
 function renderSeances(){
-const div=document.getElementById('seancesList');
-div.innerHTML='';
+const div=document.getElementById('seancesList'); div.innerHTML='';
 seances.forEach((s)=>{
-const sDiv=document.createElement('div');sDiv.style.marginBottom='10px';
-const t=document.createElement('h3');t.textContent=s.nom;sDiv.appendChild(t);
+const sDiv=document.createElement('div'); sDiv.style.marginBottom='10px';
+const t=document.createElement('h3'); t.textContent=s.nom; sDiv.appendChild(t);
 s.participants.forEach(p=>{
-const c=document.createElement('label');c.style.display='block';c.style.cursor='pointer';
-const cb=document.createElement('input');cb.type='checkbox';cb.checked=p.presente;
-cb.addEventListener('change',()=>{p.presente=cb.checked;});c.appendChild(cb);c.appendChild(document.createTextNode(" "+p.name));
+const c=document.createElement('label'); c.style.display='block'; c.style.cursor='pointer';
+const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=p.presente;
+cb.addEventListener('change',()=>{p.presente=cb.checked;}); c.appendChild(cb); c.appendChild(document.createTextNode(" "+p.name));
 sDiv.appendChild(c);
 });
 div.appendChild(sDiv);
@@ -178,8 +188,8 @@ users.eleves.forEach(e=>{
 const s=state[e.id];
 csv+=`${e.name},${s.participation},${s.bav},${s.agi},${s.lutin?'Oui':'Non'},${s.obs},${s.bav+s.agi+(s.lutin?0:1)}\n`;
 });
-const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-const a=document.createElement('a');a.href=url;a.download='classe301_export.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob);
+const a=document.createElement('a'); a.href=url; a.download='classe301_export.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 });
 </script>
 </body>
