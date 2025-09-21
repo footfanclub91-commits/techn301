@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Techn301 — Collège Charles Péguy (v0.5)</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <meta name="theme-color" content="#0f172a">
+</head>
+<body>
+  <div id="app" class="app">
+
+    <div id="loading" class="layer center">
+      <div class="glass-card loading-card">
+        <div class="logo">Techn301</div>
+        <h3>Chargement de la base de données JSON…</h3>
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="muted">USERS.JSON UNFOUND ON MAIN BRANCHS</code>.</p>
+      </div>
+    </div>
+
+    <main id="main" class="hidden">
+      <header class="topbar glass">
+        <div class="brand">
+          <div class="logo-small">T301</div>
+          <div>
+            <div class="title">Techn301</div>
+            <div class="subtitle">Collège Charles Péguy</div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <input id="globalSearch" class="search" placeholder="Rechercher élève..." aria-label="Recherche" />
+          <button id="openHelp" class="btn liquid">Aide</button>
+        </div>
+      </header>
+
+      <section class="centered hero">
+        <div class="glass-card hero-card">
+          <h1>Bienvenue sur Techn301, LE logiciel de gestion du cours de Technologie en 301</h1>
+          <p class="muted">Accèder à son espace — prof ou élève</p>
+          <div class="auth-row">
+            <button id="btnStart" class="btn big liquid">Entrer</button>
+            <a class="link-muted" href="#" id="demoLink">Voir une démo du service gratuite et rapide</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="pages" class="pages">
+
+        <article id="pageLogin" class="card-panel hidden">
+          <h2>Connecter-vous (avec vos ID envoyés sur l'ENT)</h2>
+          <form id="loginForm" class="form">
+            <label>Identifiant
+              <input id="loginId" placeholder="ex : p.nom" required />
+            </label>
+            <label>PIN
+              <input id="loginPin" type="password" placeholder="Code PIN provisoire si première connexion au service" required />
+            </label>
+            <div class="form-row">
+              <button type="submit" class="btn liquid">Connexion</button>
+              <button type="button" id="btnDemoLogin" class="btn hollow">Se connecter en démo</button>
+            </div>
+            <p id="loginError" class="error hidden">L'Identifiant fourni ou le mot de passe est incorrect.</p>
+          </form>
+        </article>
+
+        <article id="pageStudent" class="card-panel hidden">
+          <div class="panel-header">
+            <h2 id="Welcome">Bienvenue sur votre espace</h2>
+            <div class="panel-actions">
+              <button class="btn danger" onclick="logout()">Déconnexion</button>
+            </div>
+          </div>
+
+          <div class="student-grid">
+            <div class="glass-card small">
+              <h3>Information te concerant</h3>
+              <p><strong>Identifiant :</strong> <span id="sId"></span></p>
+              <p><strong>Nom :</strong> <span id="sName"></span></p>
+              <p><strong>Dernière connexion :</strong> <span id="sLast">—</span></p>
+              <div id="firstLoginBox" class="boxed hidden">
+                <p>Choisi un mot de passe plus sécurisé (le code pin ne l'est pas, change ton PIN :</p>
+                <input id="newPin" placeholder="Nouveau PIN (4+)" />
+                <button class="btn liquid" onclick="changePin()">Changer le MDP</button>
+              </div>
+            </div>
+
+            <div class="glass-card large">
+              <h3>Ton suivi personnalisé par MME THABET.H</h3>
+              <ul id="studentlistdesession" class="list-plain"></ul>
+              <h4>Remarques</h4>
+              <ul id="studentRemarques" class="list-plain"></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="pageAdmin" class="card-panel hidden">
+          <div class="panel-header">
+            <h2>Gestion de la classe</h2>
+            <div class="panel-actions">
+              <button class="btn hollow" onclick="openImport()">Importer un CsV</button>
+              <button class="btn liquid" onclick="exportCSV()">Exporter un CSV</button>
+              <button class="btn danger" onclick="logoutAdmin()">Déconnexion</button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="glass-card">
+              <h3>Créer / gérer ma séance</h3>
+              <label>Date de la séance <input type="date" id="sessionDate" /></label>
+              <div class="form-row">
+                <button class="btn liquid" onclick="createSession()">Créer séance</button>
+                <button class="btn hollow" onclick="renderSessions()">Voir séances</button>
+              </div>
+              <ul id="sessionsList" class="list-plain small"></ul>
+            </div>
+
+            <div class="glass-card">
+              <h3>Filtres & recherche</h3>
+              <input id="searchBox" placeholder="Filtrer par nom / id" oninput="renderAdminTable()" />
+              <div class="form-row">
+                <select id="filterLutin" onchange="renderAdminTable()">
+                  <option value="">Filtrer lutin</option>
+                  <option value="À jour">À jour</option>
+                  <option value="Non à jour">Non à jour</option>
+                </select>
+                <select id="filterStatut" onchange="renderAdminTable()">
+                  <option value="">Filtrer statut</option>
+                  <option>Présent</option>
+                  <option>Absent</option>
+                  <option>Retard</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card full">
+            <h3>Liste des élèves</h3>
+            <div class="table-responsive">
+              <table id="adminTable" class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nom</th><th>ID</th><th>PIN</th>
+                    <th>Remarques</th><th>Agit.</th><th>Bav.</th><th>Part.</th><th>Statut</th><th>Lutin</th><th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <div id="toast" class="toast hidden"></div>
+    </main>
+
+  </div>
+
+<script>
+
+
+const RAW_USER_URL = 'https://raw.githubusercontent.com/footfanclub91-commits/techn301/main/users.json';
+let USERS = null;
+let CURRENT = null;
+let SESSIONS = JSON.parse(localStorage.getItem('t301_sessions') || '[]');
+
+const $ = id => document.getElementById(id);
+const show = el=> el && (el.classList.remove('hidden'), el.style.display='block');
+const hide = el=> el && (el.classList.add('hidden'), el.style.display='none');
+const toast = (t, ms=3000) => {
+  const tbox = $('toast');
+  tbox.textContent = t; tbox.classList.remove('hidden'); tbox.classList.add('show');
+  setTimeout(()=>{ tbox.classList.add('hidden'); tbox.classList.remove('show'); }, ms);
+};
+
+const loading = $('loading');
+const main = $('main');
+const startBtn = $('btnStart');
+const loginForm = $('loginForm') || document.getElementById('loginForm');
+
+document.addEventListener('DOMContentLoaded', init);
+async function init(){
+  try {
+    let res = await fetch('users.json');
+    if(!res.ok) throw new Error('local fetch failed');
+    USERS = await res.json();
+  } catch(e) {
+    console.warn('local users.json failed, trying RAW GitHub...', e);
+    try {
+      let res2 = await fetch(RAW_USER_URL);
+      if(!res2.ok) throw new Error('raw fetch failed');
+      USERS = await res2.json();
+    } catch(err){
+      console.error('Cannot load users.json', err);
+      alert('Erreur chargement users.json — vérifie le fichier ou la connexion');
+      hide(loading);
+      return;
+    }
+  }
+
+  USERS.eleves = USERS.eleves || [];
+  USERS.prof = USERS.prof || [];
+
+  USERS.eleves.forEach(u => {
+    const saved = localStorage.getItem('user:'+u.id);
+    if(saved){
+      try { Object.assign(u, JSON.parse(saved)); } catch(e){}
+    } else {
+      u.remarques = u.remarques || [];
+      u.agitation = u.agitation || 0;
+      u.bavardages = u.bavardages || 0;
+      u.participation = u.participation || 0;
+      u.statut = u.statut || 'Présent';
+      u.lutin = u.lutin || 'À jour';
+    }
+  });
+
+  USERS.eleves.sort((a,b)=> a.name.localeCompare(b.name));
+
+  hide(loading);
+  show($('main'));
+  show($('welcome'));
+  attachHandlers();
+  renderSessions();
+}
+
+function attachHandlers(){
+  $('btnStart').addEventListener('click', ()=>{
+    hide($('welcome'));
+    show($('pageLogin'));
+  });
+
+  const form = document.getElementById('loginForm');
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    login();
+  });
+
+  document.getElementById('btnDemoLogin').addEventListener('click', ()=>{
+    // demo: login as first prof if exists
+    if(USERS.prof && USERS.prof[0]){
+      doLogin(USERS.prof[0]);
+    } else toast('Pas de compte prof trouvé.');
+  });
+
+  $('globalSearch') && $('globalSearch').addEventListener('input', e=>{
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('.eleveRow').forEach(r=>{
+      r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+}
+
+function login(){
+  const id = $('loginId').value.trim();
+  const pin = $('loginPin').value.trim();
+  if(!USERS) { toast('Données non chargées'); return; }
+  let user = USERS.eleves.find(u=>u.id === id && u.pin === pin);
+  if(!user) user = USERS.prof.find(p=>p.id === id && p.pin === pin);
+  if(!user){ $('loginError').classList.remove('hidden'); return; }
+  $('loginError').classList.add('hidden');
+  doLogin(user);
+}
+
+function doLogin(user){
+  CURRENT = user;
+  sessionStorage.setItem('t301_current', JSON.stringify({id:user.id, time:Date.now()}));
+  hide($('pageLogin'));
+  if(USERS.prof.find(p=>p.id===user.id)){
+    show($('pageAdmin'));
+    renderAdminTable();
+    toast('Connecté en tant que professeur');
+  } else {
+    show($('pageStudent'));
+    fillStudentView();
+    toast('Connecté en tant qu\'élève');
+  }
+}
+
+function fillStudentView(){
+  $('sId').textContent = CURRENT.id || '';
+  $('sName').textContent = CURRENT.name || '';
+  $('sLast').textContent = CURRENT.lastLogin || '—';
+  $('studentWelcome').textContent = `Bienvenue ${CURRENT.name.split(' ')[0]}`;
+  const rem = $('studentRemarques'); rem.innerHTML = '';
+  (CURRENT.remarques || []).forEach(r=>{ const li=document.createElement('li'); li.textContent = r; rem.appendChild(li); });
+  const sessList = $('studentSessionsList'); sessList.innerHTML='';
+  SESSIONS.forEach(s=>{
+    const me = s.eleves?.find(e=>e.id===CURRENT.id);
+    const li = document.createElement('li');
+    li.textContent = `${s.date} — ${me ? `Part:${me.participation}, Ag:${me.agitation}, Abs:${me.absences||0}` : '—'}`;
+    sessList.appendChild(li);
+  });
+  if(CURRENT.firstLogin) show($('firstLoginBox')); else hide($('firstLoginBox'));
+}
+
+function changePin(){
+  const np = $('newPin').value.trim();
+  if(np.length<4){ toast('PIN doit faire au moins 4 caractères'); return; }
+  CURRENT.pin = np;
+  CURRENT.firstLogin = false;
+  localStorage.setItem('user:'+CURRENT.id, JSON.stringify(CURRENT));
+  hide($('firstLoginBox'));
+  toast('PIN modifié');
+}
+
+function logout(){ sessionStorage.removeItem('t301_current'); location.reload(); }
+function logoutAdmin(){ sessionStorage.removeItem('t301_current'); location.reload(); }
+
+function createSession(){
+  const d = $('sessionDate').value;
+  if(!d) return toast('Choisis une date');
+  const session = {
+    id: 'sess_'+Date.now(),
+    date: d,
+    createdAt: new Date().toISOString(),
+    eleves: USERS.eleves.map(e=>({
+      id:e.id, name:e.name,
+      participation:0, agitation:0, bavardages:0, absences:0, observations:[], statut: e.statut || 'Présent'
+    }))
+  };
+  SESSIONS.unshift(session);
+  localStorage.setItem('t301_sessions', JSON.stringify(SESSIONS));
+  renderSessions();
+  toast('Séance créée : '+d);
+}
+
+function renderSessions(){
+  const list = $('sessionsList'); if(!list) return;
+  list.innerHTML = '';
+  if(SESSIONS.length===0) { list.innerHTML='<li class="muted">Aucune séance</li>'; return; }
+  SESSIONS.forEach((s,i)=>{
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div class="sess-row">
+        <strong>${s.date}</strong>
+        <div>
+          <button class="btn hollow" onclick="openSession(${i})">Ouvrir</button>
+          <button class="btn" onclick="deleteSession(${i})">Suppr</button>
+        </div>
+      </div>`;
+    list.appendChild(li);
+  });
+}
+
+function deleteSession(i){
+  if(!confirm('Supprimer la séance ?')) return;
+  SESSIONS.splice(i,1);
+  localStorage.setItem('t301_sessions', JSON.stringify(SESSIONS));
+  renderSessions();
+  renderAdminTable();
+  toast('Séance supprimée');
+}
+
+// open session -> populate admin table with session-specific stats
+let OPEN_SESSION = null;
+function openSession(index){
+  OPEN_SESSION = index;
+  renderAdminTable();
+  toast('Séance ouverte : '+SESSIONS[index].date);
+}
+
+/* Admin table rendering
+   - If a session is open, operate on session.eleves
+   - else operate on USERS.eleves global counters
+*/
+function renderAdminTable(){
+  const tbody = $('adminTableBody');
+  tbody.innerHTML = '';
+  const q = $('searchBox')?.value?.toLowerCase?.() || '';
+  const filterLutin = $('filterLutin')?.value || '';
+  const filterStatut = $('filterStatut')?.value || '';
+
+  const dataset = OPEN_SESSION!==null ? SESSIONS[OPEN_SESSION].eleves : USERS.eleves;
+
+  dataset.forEach((s,i)=>{
+    if(q && !(s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q))) return;
+    if(filterLutin && s.lutin && s.lutin !== filterLutin) return;
+    if(filterStatut && s.statut && s.statut !== filterStatut) return;
+
+    const tr = document.createElement('tr'); tr.className='eleveRow';
+    // Name, id, pin (if session mode, map from USERS to get pin)
+    const pin = (USERS.eleves.find(u=>u.id===s.id) || {}).pin || '—';
+    tr.innerHTML = `
+      <td>${s.name}</td>
+      <td>${s.id}</td>
+      <td>${pin}</td>
+      <td>
+        <ul class="small-list">${(s.remarques||[]).map(r=>`<li>${escapeHtml(r)}</li>`).join('')}</ul>
+        <textarea id="rem_${s.id}" placeholder="Nouvelle remarque..."></textarea>
+        <div class="form-row"><button class="btn small" onclick="addRemark('${s.id}')">Ajouter</button></div>
+      </td>
+      <td><div class="counter">${s.agitation||0}</div><div class="btn-row"><button class="btn small" onclick="inc('${s.id}','agitation')">+1</button></div></td>
+      <td><div class="counter">${s.bavardages||0}</div><div class="btn-row"><button class="btn small" onclick="inc('${s.id}','bavardages')">+1</button></div></td>
+      <td><div class="counter">${s.participation||0}</div><div class="btn-row"><button class="btn small" onclick="inc('${s.id}','participation')">+1</button></div></td>
+      <td>
+        <select onchange="setStatut('${s.id}',this.value)">
+          <option ${s.statut==='Présent'?'selected':''}>Présent</option>
+          <option ${s.statut==='Absent'?'selected':''}>Absent</option>
+          <option ${s.statut==='Retard'?'selected':''}>Retard</option>
+        </select>
+      </td>
+      <td>
+        <select onchange="setLutin('${s.id}',this.value)">
+          <option ${s.lutin==='À jour'?'selected':''}>À jour</option>
+          <option ${s.lutin==='Non à jour'?'selected':''}>Non à jour</option>
+        </select>
+      </td>
+      <td>
+        <div class="action-col">
+          <button class="btn tiny" onclick="resetPinById('${s.id}')">Reset PIN</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+
+// add remark (session-mode or global)
+function addRemark(id){
+  const ta = $('rem_'+id);
+  if(!ta) return;
+  const text = ta.value.trim(); if(!text) return;
+  if(OPEN_SESSION!==null){
+    const e = SESSIONS[OPEN_SESSION].eleves.find(x=>x.id===id);
+    e.observations = e.observations || []; e.observations.push(text);
+    localStorage.setItem('t301_sessions', JSON.stringify(SESSIONS));
+  } else {
+    const u = USERS.eleves.find(x=>x.id===id);
+    u.remarques = u.remarques || []; u.remarques.push(text);
+    localStorage.setItem('user:'+u.id, JSON.stringify(u));
+  }
+  ta.value=''; renderAdminTable(); toast('Remarque ajoutée');
+}
+
+// increment counters
+function inc(id, field){
+  if(OPEN_SESSION!==null){
+    const e = SESSIONS[OPEN_SESSION].eleves.find(x=>x.id===id);
+    e[field] = (e[field]||0)+1;
+    // check problems -> if agitation + bavardages + absences + observations >= 3 -> alert
+    checkProblems(e);
+    localStorage.setItem('t301_sessions', JSON.stringify(SESSIONS));
+  } else {
+    const u = USERS.eleves.find(x=>x.id===id);
+    u[field] = (u[field]||0)+1;
+    checkProblems(u);
+    localStorage.setItem('user:'+u.id, JSON.stringify(u));
+  }
+  renderAdminTable();
+}
+
+// set statut / lutin
+function setStatut(id, val){
+  if(OPEN_SESSION!==null){
+    const e = SESSIONS[OPEN_SESSION].eleves.find(x=>x.id===id); e.statut=val;
+    localStorage.setItem('t301_sessions', JSON.stringify(SESSIONS));
+  } else {
+    const u = USERS.eleves.find(x=>x.id===id); u.statut=val;
+    localStorage.setItem('user:'+u.id, JSON.stringify(u));
+  }
+}
+function setLutin(id, val){
+  if(OPEN_SESSION!==null){
+    const e = SESSIONS[OPEN_SESSION].eleves.find(x=>x.id===id); e.lutin=val;
+    localStorage.setItem('t301_sessions', JSON.stringify(SESSIONS));
+  } else {
+    const u = USERS.eleves.find(x=>x.id===id); u.lutin=val;
+    localStorage.setItem('user:'+u.id, JSON.stringify(u));
+  }
+}
+
+// reset pin by id (admin)
+function resetPinById(id){
+  const newPin = prompt('Nouveau PIN pour '+id+' :');
+  if(!newPin || newPin.length<4) return;
+  const u = USERS.eleves.find(x=>x.id===id);
+  if(u){ u.pin=newPin; localStorage.setItem('user:'+u.id, JSON.stringify(u)); renderAdminTable(); toast('PIN réinitialisé'); }
+}
+
+// check problems and alert colle
+function checkProblems(e){
+  const problems = (e.agitation||0) + (e.bavardages||0) + (e.absences||0) + ((e.observations||[]).length||0);
+  if(problems>=3){
+    alert('⚠️ Rappel : Heure de colle pour ' + e.name);
+  }
+}
+
+// export CSV (prof)
+function exportCSV(){
+  const rows = [['Nom','ID','PIN','Remarques','Agitation','Bavardages','Participation','Statut','Lutin']];
+  USERS.eleves.forEach(u=>{
+    rows.push([u.name,u.id,u.pin,(u.remarques||[]).join(' | '),(u.agitation||0),(u.bavardages||0),(u.participation||0),u.statut||'',u.lutin||'']);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const link = document.createElement('a'); link.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  link.download = 'techn301_eleves.csv'; document.body.appendChild(link); link.click(); link.remove();
+}
+
+// filter wrapper
+function filterEleves(){
+  renderAdminTable();
+}
+
+// import JSON file (admin)
+function openImport(){
+  const input = document.createElement('input'); input.type='file'; input.accept='.json';
+  input.onchange = e=>{
+    const f = e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        if(parsed.eleves) {
+          USERS = parsed;
+          // save to local files? we just refresh
+          localStorage.clear();
+          SESSIONS = [];
+          localStorage.setItem('t301_sessions', JSON.stringify(SESSIONS));
+          toast('Import OK — rafraîchis la page pour tout prendre en compte');
+          renderAdminTable();
+        } else throw 'Format invalide';
+      } catch(err){ alert('Erreur import: '+err); }
+    };
+    reader.readAsText(f);
+  };
+  input.click();
+}
+
+// on load restore session (if any)
+window.onload = ()=>{
+  const saved = sessionStorage.getItem('t301_current');
+  if(saved){
+    try {
+      const obj = JSON.parse(saved); const id = obj.id;
+      const user = (USERS && USERS.eleves.find(u=>u.id===id)) || (USERS && USERS.prof.find(p=>p.id===id));
+      if(user) doLogin(user);
+    } catch(e){}
+  }
+};
+
+/* quick helper to respond to search boxes */
+document.addEventListener('input', (e)=>{
+  if(e.target && e.target.id==='searchBox') renderAdminTable();
+});
+
+</script>
+</body>
+</html>
