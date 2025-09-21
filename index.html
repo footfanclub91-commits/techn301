@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Classe 301 — Gestion</title>
+<title>Classe 301 — Connexion</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,56 +15,71 @@
 <button id="loginBtn">Se connecter</button>
 <div id="errorMsg"></div>
 </div>
-<div class="glass-card" id="mainCard" style="display:none;">
-<h1>Bienvenue</h1>
-<div id="userName"></div>
-<div id="profSection" style="display:none;">
-<h2>Liste des élèves</h2>
-<div id="elevesList"></div>
-<h2>Gérer les séances</h2>
-<button id="addSeance">Ajouter séance</button>
-<div id="seancesList"></div>
-</div>
+<div class="glass-card" id="eleveCard" style="display:none;">
+<h1>Bienvenue élève</h1>
+<div id="eleveName"></div>
 <h2>Contester un événement</h2>
 <textarea id="contesteMsg" placeholder="Écrire votre message..."></textarea>
 <button id="sendConteste">Envoyer</button>
 <div id="contesteInfo"></div>
 </div>
+<div class="glass-card" id="profCard" style="display:none;">
+<h1>Bienvenue professeur</h1>
+<div id="profName"></div>
+<h2>Liste des élèves</h2>
+<div id="elevesList"></div>
+<h2>Gérer les séances</h2>
+<button id="addSeance">Ajouter séance</button>
+<div id="seancesList"></div>
+<h2>Contester un événement</h2>
+<textarea id="contesteMsgProf" placeholder="Écrire votre message..."></textarea>
+<button id="sendContesteProf">Envoyer</button>
+<div id="contesteInfoProf"></div>
+</div>
 <script>
 let users=null;
 fetch('user.json').then(r=>r.json()).then(d=>{users=d;});
 const loginCard=document.getElementById('loginCard');
-const mainCard=document.getElementById('mainCard');
-const userNameDiv=document.getElementById('userName');
-const elevesList=document.getElementById('elevesList');
-const errorMsg=document.getElementById('errorMsg');
-const profSection=document.getElementById('profSection');
+const eleveCard=document.getElementById('eleveCard');
+const profCard=document.getElementById('profCard');
 let currentUser=null;
 let seances=[];
 document.getElementById('loginBtn').addEventListener('click',()=>{
 const id=document.getElementById('userId').value.trim();
 const pin=document.getElementById('userPin').value.trim();
 let found=null;
-if(!users){errorMsg.textContent="Données non chargées";return;}
+if(!users){document.getElementById('errorMsg').textContent="Données non chargées";return;}
 for(const u of [...users.eleves,...users.prof]){if(u.id===id&&u.pin===pin){found=u;break;}}
 if(found){
 currentUser=found;
 loginCard.style.display='none';
-mainCard.style.display='block';
-userNameDiv.textContent="Connecté : "+found.name;
 if(users.prof.some(p=>p.id===found.id)){
-profSection.style.display='block';
-elevesList.innerHTML='';
-users.eleves.forEach(e=>{const d=document.createElement('div');d.textContent=e.name+" ("+e.id+")";elevesList.appendChild(d);});
+profCard.style.display='block';
+document.getElementById('profName').textContent="Connecté : "+found.name;
+renderEleves();
 renderSeances();
-}else{profSection.style.display='none';}
-}else{errorMsg.textContent="Identifiant ou PIN incorrect";}
+}else{
+eleveCard.style.display='block';
+document.getElementById('eleveName').textContent="Connecté : "+found.name;
+}
+}else{document.getElementById('errorMsg').textContent="Identifiant ou PIN incorrect";}
 });
+function renderEleves(){
+const list=document.getElementById('elevesList');
+list.innerHTML='';
+users.eleves.forEach(e=>{const d=document.createElement('div');d.textContent=e.name+" ("+e.id+")";list.appendChild(d);});
+}
 document.getElementById('sendConteste').addEventListener('click',()=>{
 const msg=document.getElementById('contesteMsg').value.trim();
 if(msg.length===0){document.getElementById('contesteInfo').textContent="Veuillez écrire un message.";return;}
 document.getElementById('contesteInfo').textContent="Message envoyé : "+msg;
 document.getElementById('contesteMsg').value='';
+});
+document.getElementById('sendContesteProf').addEventListener('click',()=>{
+const msg=document.getElementById('contesteMsgProf').value.trim();
+if(msg.length===0){document.getElementById('contesteInfoProf').textContent="Veuillez écrire un message.";return;}
+document.getElementById('contesteInfoProf').textContent="Message envoyé : "+msg;
+document.getElementById('contesteMsgProf').value='';
 });
 document.getElementById('addSeance').addEventListener('click',()=>{
 const nom=prompt("Nom de la séance");
@@ -76,7 +91,7 @@ renderSeances();
 function renderSeances(){
 const div=document.getElementById('seancesList');
 div.innerHTML='';
-seances.forEach((s,idx)=>{
+seances.forEach((s)=>{
 const sDiv=document.createElement('div');
 sDiv.style.marginBottom='10px';
 const t=document.createElement('h3');
@@ -100,4 +115,3 @@ div.appendChild(sDiv);
 </script>
 </body>
 </html>
-
