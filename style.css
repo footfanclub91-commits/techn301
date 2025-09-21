@@ -3,7 +3,7 @@
   --bg-end: #ffffff;
   --primary-color: #2b7cff;
   --primary-hover: #1a5ecc;
-  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-bg: rgba(255, 255, 255, 0.95);
   --card-shadow: 0 10px 30px rgba(0,0,0,0.15);
   --input-bg: rgba(255,255,255,0.85);
   --input-border: #ccc;
@@ -22,11 +22,12 @@ html, body {
 
 body {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   background: linear-gradient(270deg, var(--bg-start), var(--bg-end));
   background-size: 400% 400%;
   animation: moveGradient 20s ease infinite;
+  padding: 20px;
 }
 
 @keyframes moveGradient {
@@ -39,21 +40,24 @@ body {
   background: var(--card-bg);
   border-radius: 20px;
   box-shadow: var(--card-shadow);
-  width: 400px;
+  width: 100%;
+  max-width: 1400px;
   padding: 30px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   text-align: center;
+  min-height: 80vh;
 }
 
 .card h1 {
-  font-size: 24px;
+  font-size: 28px;
   color: #333;
 }
 
 .card input {
   width: 100%;
+  max-width: 300px;
   padding: 12px;
   border-radius: 12px;
   border: 1px solid var(--input-border);
@@ -101,7 +105,7 @@ table {
 }
 
 th, td {
-  padding: 10px;
+  padding: 12px 8px;
   text-align: center;
 }
 
@@ -109,6 +113,7 @@ th {
   background-color: var(--primary-color);
   color: #fff;
   font-weight: 600;
+  text-transform: uppercase;
 }
 
 td {
@@ -118,14 +123,14 @@ td {
 .status-ok {
   background-color: #e6ffed;
   color: #046c3b;
-  padding: 6px 8px;
+  padding: 6px 10px;
   border-radius: 8px;
 }
 
 .status-warn {
   background-color: #fff4e5;
   color: #7a4b00;
-  padding: 6px 8px;
+  padding: 6px 10px;
   border-radius: 8px;
 }
 
@@ -133,4 +138,11 @@ td {
   margin-top: 15px;
   font-size: 13px;
   color: #666;
+}
+
+@media (max-width: 1200px){
+  th, td {
+    font-size: 12px;
+    padding: 10px 6px;
+  }
 }
