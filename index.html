@@ -6,7 +6,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Page de connexion -->
   <div id="login-container" class="glass-box">
     <h1>Bienvenue 👋</h1>
     <form id="login-form">
@@ -17,7 +16,6 @@
     <p id="login-error"></p>
   </div>
 
-  <!-- Espace élève -->
   <div id="eleve-container" class="hidden glass-box">
     <h2>Espace Élève</h2>
     <p id="eleve-info"></p>
@@ -30,13 +28,12 @@
       <li>Nombre de séances : <span id="seances">0</span></li>
       <li>Travaux : <span id="travaux">Aucun</span></li>
     </ul>
-    <h3>Messagerie contestation</h3>
+    <h3>Messagerie pour toute question ou contestation</h3>
     <textarea id="contest-message" placeholder="Expliquer la contestation..."></textarea>
     <button id="send-contest" class="btn">Envoyer au professeur</button>
     <button onclick="logout()" class="btn">Déconnexion</button>
   </div>
 
-  <!-- Espace prof -->
   <div id="prof-container" class="hidden glass-box">
     <h2>Espace Professeur</h2>
     <input type="text" id="search-eleve" placeholder="Rechercher un élève...">
@@ -47,7 +44,6 @@
     <button onclick="logout()" class="btn">Déconnexion</button>
   </div>
 
-  <!-- Espace admin -->
   <div id="admin-container" class="hidden glass-box">
     <h2>Espace Admin</h2>
     <button id="create-eleve" class="btn">Créer un élève</button>
@@ -60,12 +56,10 @@
     let currentUser = null;
     let usersData = {};
 
-    // Charger les utilisateurs
     fetch("users.json")
       .then(res => res.json())
       .then(data => usersData = data);
-
-    // Connexion
+    
     document.getElementById("login-form").addEventListener("submit", e => {
       e.preventDefault();
       const id = document.getElementById("userId").value;
@@ -97,6 +91,22 @@
       document.querySelectorAll(".glass-box").forEach(box => box.classList.add("hidden"));
       document.getElementById("login-container").classList.remove("hidden");
     }
-  </script>
+  <script>
+  document.querySelectorAll(".btn").forEach(btn => {
+    document.addEventListener("mousemove", e => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      const distance = Math.sqrt(x*x + y*y);
+
+      if(distance < 200){ 
+        btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+      } else {
+        btn.style.transform = "translate(0,0)";
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
