@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Classe 301 — Connexion</title>
+<title>Classe 301 — Gestion complète</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="background"></div>
+
 <div class="glass-card" id="loginCard">
 <h1>Connexion — Classe 301</h1>
 <input type="text" id="userId" placeholder="Identifiant">
@@ -15,40 +16,72 @@
 <button id="loginBtn">Se connecter</button>
 <div id="errorMsg"></div>
 </div>
+
 <div class="glass-card" id="eleveCard" style="display:none;">
-<h1>Bienvenue élève</h1>
+<h1>Bienvenue, élève</h1>
 <div id="eleveName"></div>
+<h2>Mes observations et performances</h2>
+<table id="eleveTable">
+<thead>
+<tr>
+<th>Participation</th>
+<th>Bavardages</th>
+<th>Agitation</th>
+<th>Lutin à jour</th>
+<th>Total problèmes</th>
+</tr>
+</thead>
+<tbody id="eleveTbody"></tbody>
+</table>
 <h2>Contester un événement</h2>
 <textarea id="contesteMsg" placeholder="Écrire votre message..."></textarea>
 <button id="sendConteste">Envoyer</button>
 <div id="contesteInfo"></div>
 </div>
+
 <div class="glass-card" id="profCard" style="display:none;">
-<h1>Bienvenue professeur</h1>
+<h1>Bienvenue, professeur</h1>
 <div id="profName"></div>
 <h2>Liste des élèves</h2>
-<div id="elevesList"></div>
-<h2>Gérer les séances</h2>
+<table id="elevesTable">
+<thead>
+<tr>
+<th>Nom</th>
+<th>Participation</th>
+<th>Bavardages</th>
+<th>Agitation</th>
+<th>Lutin à jour</th>
+<th>Observations</th>
+<th>Total problèmes</th>
+</tr>
+</thead>
+<tbody id="elevesTbody"></tbody>
+</table>
+<h2>Ajouter une séance</h2>
 <button id="addSeance">Ajouter séance</button>
 <div id="seancesList"></div>
 <h2>Contester un événement</h2>
 <textarea id="contesteMsgProf" placeholder="Écrire votre message..."></textarea>
 <button id="sendContesteProf">Envoyer</button>
 <div id="contesteInfoProf"></div>
+<button id="exportCSV">Exporter CSV</button>
 </div>
+
 <script>
 let users=null;
-fetch('user.json').then(r=>r.json()).then(d=>{users=d;});
+fetch('user.json').then(r=>r.json()).then(d=>{users=d; initState();});
+let state={}, seances=[];
+function initState(){users.eleves.forEach(e=>{state[e.id]={participation:0,bav:0,agi:0,lutin:true,obs:""};});}
+
 const loginCard=document.getElementById('loginCard');
 const eleveCard=document.getElementById('eleveCard');
 const profCard=document.getElementById('profCard');
 let currentUser=null;
-let seances=[];
+
 document.getElementById('loginBtn').addEventListener('click',()=>{
 const id=document.getElementById('userId').value.trim();
 const pin=document.getElementById('userPin').value.trim();
 let found=null;
-if(!users){document.getElementById('errorMsg').textContent="Données non chargées";return;}
 for(const u of [...users.eleves,...users.prof]){if(u.id===id&&u.pin===pin){found=u;break;}}
 if(found){
 currentUser=found;
@@ -56,31 +89,65 @@ loginCard.style.display='none';
 if(users.prof.some(p=>p.id===found.id)){
 profCard.style.display='block';
 document.getElementById('profName').textContent="Connecté : "+found.name;
-renderEleves();
+renderProfTable();
 renderSeances();
 }else{
 eleveCard.style.display='block';
 document.getElementById('eleveName').textContent="Connecté : "+found.name;
+renderEleveTable();
 }
 }else{document.getElementById('errorMsg').textContent="Identifiant ou PIN incorrect";}
 });
-function renderEleves(){
-const list=document.getElementById('elevesList');
-list.innerHTML='';
-users.eleves.forEach(e=>{const d=document.createElement('div');d.textContent=e.name+" ("+e.id+")";list.appendChild(d);});
+
+function renderEleveTable(){
+const tbody=document.getElementById('eleveTbody');
+tbody.innerHTML='';
+const s=state[currentUser.id];
+const tr=document.createElement('tr');
+tr.innerHTML=`<td>${s.participation}</td><td>${s.bav}</td><td>${s.agi}</td><td>${s.lutin?'Oui':'Non'}</td><td>${s.bav+s.agi+(s.lutin?0:1)}</td>`;
+tbody.appendChild(tr);
 }
+
+function renderProfTable(){
+const tbody=document.getElementById('elevesTbody');
+tbody.innerHTML='';
+users.eleves.forEach(e=>{
+const s=state[e.id];
+const tr=document.createElement('tr');
+tr.innerHTML=`<td>${e.name}</td>
+<td><input type="number" value="${s.participation}" min="0" data-id="${e.id}" data-key="participation"></td>
+<td><input type="number" value="${s.bav}" min="0" data-id="${e.id}" data-key="bav"></td>
+<td><input type="number" value="${s.agi}" min="0" data-id="${e.id}" data-key="agi"></td>
+<td><input type="checkbox" ${s.lutin?'checked':''} data-id="${e.id}" data-key="lutin"></td>
+<td><input type="text" value="${s.obs}" data-id="${e.id}" data-key="obs"></td>
+<td>${s.bav+s.agi+(s.lutin?0:1)}</td>`;
+tbody.appendChild(tr);
+});
+document.querySelectorAll('#elevesTbody input').forEach(input=>{
+input.addEventListener('change',()=>{
+const id=input.dataset.id;const key=input.dataset.key;
+if(key==='lutin') state[id][key]=input.checked;
+else if(key==='participation'||key==='bav'||key==='agi') state[id][key]=parseInt(input.value)||0;
+else state[id][key]=input.value;
+renderProfTable();
+});
+});
+}
+
 document.getElementById('sendConteste').addEventListener('click',()=>{
 const msg=document.getElementById('contesteMsg').value.trim();
 if(msg.length===0){document.getElementById('contesteInfo').textContent="Veuillez écrire un message.";return;}
 document.getElementById('contesteInfo').textContent="Message envoyé : "+msg;
 document.getElementById('contesteMsg').value='';
 });
+
 document.getElementById('sendContesteProf').addEventListener('click',()=>{
 const msg=document.getElementById('contesteMsgProf').value.trim();
 if(msg.length===0){document.getElementById('contesteInfoProf').textContent="Veuillez écrire un message.";return;}
 document.getElementById('contesteInfoProf').textContent="Message envoyé : "+msg;
 document.getElementById('contesteMsgProf').value='';
 });
+
 document.getElementById('addSeance').addEventListener('click',()=>{
 const nom=prompt("Nom de la séance");
 if(!nom||nom.trim()==="")return;
@@ -88,30 +155,32 @@ const seance={nom:nom,participants:users.eleves.map(e=>({id:e.id,name:e.name,pre
 seances.push(seance);
 renderSeances();
 });
+
 function renderSeances(){
 const div=document.getElementById('seancesList');
 div.innerHTML='';
 seances.forEach((s)=>{
-const sDiv=document.createElement('div');
-sDiv.style.marginBottom='10px';
-const t=document.createElement('h3');
-t.textContent=s.nom;
-sDiv.appendChild(t);
+const sDiv=document.createElement('div');sDiv.style.marginBottom='10px';
+const t=document.createElement('h3');t.textContent=s.nom;sDiv.appendChild(t);
 s.participants.forEach(p=>{
-const c=document.createElement('label');
-c.style.display='block';
-c.style.cursor='pointer';
-const cb=document.createElement('input');
-cb.type='checkbox';
-cb.checked=p.presente;
-cb.addEventListener('change',()=>{p.presente=cb.checked;});
-c.appendChild(cb);
-c.appendChild(document.createTextNode(" "+p.name));
+const c=document.createElement('label');c.style.display='block';c.style.cursor='pointer';
+const cb=document.createElement('input');cb.type='checkbox';cb.checked=p.presente;
+cb.addEventListener('change',()=>{p.presente=cb.checked;});c.appendChild(cb);c.appendChild(document.createTextNode(" "+p.name));
 sDiv.appendChild(c);
 });
 div.appendChild(sDiv);
 });
 }
+
+document.getElementById('exportCSV').addEventListener('click',()=>{
+let csv='Nom,Participation,Bavardages,Agitation,Lutin à jour,Observations,Total problèmes\n';
+users.eleves.forEach(e=>{
+const s=state[e.id];
+csv+=`${e.name},${s.participation},${s.bav},${s.agi},${s.lutin?'Oui':'Non'},${s.obs},${s.bav+s.agi+(s.lutin?0:1)}\n`;
+});
+const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+const a=document.createElement('a');a.href=url;a.download='classe301_export.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+});
 </script>
 </body>
 </html>
