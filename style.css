@@ -1,45 +1,46 @@
 :root {
-  --bg-gradient-start: #a0eaff;
-  --bg-gradient-end: #ffffff;
-  --primary: #2b7cff;
-  --btn-bg: #2b7cff;
-  --btn-hover: #1a5ecc;
-  --btn-color: #fff;
+  --bg-start: #a0eaff;
+  --bg-end: #ffffff;
+  --primary-color: #2b7cff;
+  --primary-hover: #1a5ecc;
   --card-bg: rgba(255, 255, 255, 0.9);
-  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  --input-bg: rgba(255, 255, 255, 0.8);
+  --card-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  --input-bg: rgba(255,255,255,0.85);
   --input-border: #ccc;
 }
 
-body, html {
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html, body {
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow: hidden;
 }
 
 body {
-  background: linear-gradient(270deg, var(--bg-gradient-start), var(--bg-gradient-end));
-  background-size: 400% 400%;
-  animation: gradientMove 20s ease infinite;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: linear-gradient(270deg, var(--bg-start), var(--bg-end));
+  background-size: 400% 400%;
+  animation: moveGradient 20s ease infinite;
 }
 
-@keyframes gradientMove {
-  0% {background-position: 0% 50%;}
-  50% {background-position: 100% 50%;}
-  100% {background-position: 0% 50%;}
+@keyframes moveGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .card {
   background: var(--card-bg);
-  padding: 40px;
   border-radius: 20px;
   box-shadow: var(--card-shadow);
-  width: 380px;
+  width: 400px;
+  padding: 30px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -47,7 +48,6 @@ body {
 }
 
 .card h1 {
-  margin: 0;
   font-size: 24px;
   color: #333;
 }
@@ -57,14 +57,14 @@ body {
   padding: 12px;
   border-radius: 12px;
   border: 1px solid var(--input-border);
-  outline: none;
-  font-size: 14px;
   background: var(--input-bg);
+  font-size: 14px;
+  outline: none;
   transition: border 0.3s;
 }
 
 .card input:focus {
-  border-color: var(--primary);
+  border-color: var(--primary-color);
 }
 
 .btn {
@@ -74,20 +74,21 @@ body {
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
-  background-color: var(--btn-bg);
-  color: var(--btn-color);
+  background-color: var(--primary-color);
+  color: #fff;
   transition: all 0.3s ease;
 }
 
 .btn:hover {
-  background-color: var(--btn-hover);
+  background-color: var(--primary-hover);
   transform: translateY(-3px);
   box-shadow: 0 6px 15px rgba(0,0,0,0.2);
 }
 
 .table-container {
-  margin-top: 20px;
+  width: 100%;
   overflow-x: auto;
+  margin-top: 20px;
 }
 
 table {
@@ -105,7 +106,7 @@ th, td {
 }
 
 th {
-  background: var(--primary);
+  background-color: var(--primary-color);
   color: #fff;
   font-weight: 600;
 }
@@ -129,7 +130,7 @@ td {
 }
 
 .footer {
-  margin-top: 10px;
+  margin-top: 15px;
   font-size: 13px;
   color: #666;
 }
