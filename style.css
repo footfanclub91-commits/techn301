@@ -5,8 +5,26 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at 30% 30%, #a8e6ff, #ffffff, #c2f0ff);
   overflow: hidden;
+  background: radial-gradient(circle at 30% 30%, #a8e6ff, #ffffff, #c2f0ff);
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 20% 40%, rgba(0,255,255,0.5), transparent 60%),
+              radial-gradient(circle at 70% 60%, rgba(173,216,230,0.4), transparent 70%),
+              radial-gradient(circle at 40% 80%, rgba(255,255,255,0.3), transparent 80%);
+  animation: aurora 20s infinite linear;
+  z-index: -1;
+}
+
+@keyframes aurora {
+  0%   { transform: translate(-10%, -10%) rotate(0deg); }
+  50%  { transform: translate(10%, 10%) rotate(180deg); }
+  100% { transform: translate(-10%, -10%) rotate(360deg); }
 }
 
 .glass-box {
@@ -40,11 +58,11 @@ input, textarea {
   color: white;
   font-weight: bold;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .btn:hover {
-  transform: translateY(-5px);
   box-shadow: 0 8px 15px rgba(0,0,0,0.3);
 }
 
