@@ -2,111 +2,171 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Plateforme Classe</title>
+  <title>Techn301</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="login-container" class="glass-box">
-    <h1>Bienvenue 👋</h1>
-    <form id="login-form">
-      <input type="text" id="userId" placeholder="Identifiant" required>
-      <input type="password" id="userPin" placeholder="PIN" required>
-      <button type="submit" class="btn">Connexion</button>
-    </form>
-    <p id="login-error"></p>
+  <div class="aurora-background"></div>
+
+  <div id="loginScreen" class="glass-card">
+    <h1>Bienvenue</h1>
+    <p>Connectez-vous pour accéder à votre espace</p>
+    <input type="text" id="username" placeholder="Nom d'utilisateur">
+    <input type="password" id="password" placeholder="Mot de passe">
+    <select id="role">
+      <option value="eleve">Élève</option>
+      <option value="prof">Professeur</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button class="live-button" onclick="login()">Connexion</button>
   </div>
 
-  <div id="eleve-container" class="hidden glass-box">
+  <div id="eleveScreen" class="glass-card hidden">
     <h2>Espace Élève</h2>
-    <p id="eleve-info"></p>
-    <ul>
-      <li>Total participations : <span id="total-participation">0</span></li>
-      <li>Bavardages : <span id="bavardages">0</span></li>
-      <li>Agitations : <span id="agitations">0</span></li>
-      <li>Remarques : <span id="remarques">0</span></li>
-      <li>Incidents contestés : <span id="contestations">0</span></li>
-      <li>Nombre de séances : <span id="seances">0</span></li>
-      <li>Travaux : <span id="travaux">Aucun</span></li>
-    </ul>
-    <h3>Messagerie pour toute question ou contestation</h3>
-    <textarea id="contest-message" placeholder="Expliquer la contestation..."></textarea>
-    <button id="send-contest" class="btn">Envoyer au professeur</button>
-    <button onclick="logout()" class="btn">Déconnexion</button>
-  </div>
-
-  <div id="prof-container" class="hidden glass-box">
-    <h2>Espace Professeur</h2>
-    <input type="text" id="search-eleve" placeholder="Rechercher un élève...">
-    <div id="eleve-list"></div>
+    <p id="eleveName"></p>
+    <div class="stats">
+      <p>Total participation : <span id="totalParticipation">0</span></p>
+      <p>Bavardages : <span id="totalBavardages">0</span></p>
+      <p>Agitation : <span id="totalAgitation">0</span></p>
+      <p>Remarques : <span id="totalRemarques">0</span></p>
+      <p>Nombre de séances : <span id="nombreSeances">0</span></p>
+    </div>
+    <textarea id="contestMessage" placeholder="Contester un incident..."></textarea>
+    <button class="live-button" onclick="contesterIncident()">Envoyer</button>
     <h3>Messagerie</h3>
-    <textarea id="prof-message" placeholder="Écrire un message privé..."></textarea>
-    <button id="send-prof-message" class="btn">Envoyer</button>
-    <button onclick="logout()" class="btn">Déconnexion</button>
+    <textarea id="mailMessage" placeholder="Écrire un message..."></textarea>
+    <button class="live-button" onclick="envoyerMessage()">Envoyer au prof</button>
+    <button class="live-button" onclick="reportBug()">Signaler un bug</button>
   </div>
 
-  <div id="admin-container" class="hidden glass-box">
+  <div id="profScreen" class="glass-card hidden">
+    <h2>Espace Professeur</h2>
+    <input type="text" id="searchEleve" placeholder="Rechercher un élève..." onkeyup="searchEleve()">
+    <ul id="eleveList"></ul>
+    <div id="eleveDetails" class="hidden">
+      <h3 id="detailName"></h3>
+      <p>Dernière connexion : <span id="lastConnexion"></span></p>
+      <button class="live-button" onclick="addIncident('bavardage')">+ Bavardage</button>
+      <button class="live-button" onclick="addIncident('agitation')">+ Agitation</button>
+      <button class="live-button" onclick="addIncident('travail')">+ Travail non fait</button>
+      <textarea id="privateMessage" placeholder="Envoyer un message privé..."></textarea>
+      <button class="live-button" onclick="sendPrivateMessage()">Envoyer</button>
+    </div>
+    <button class="live-button" onclick="reportBug()">Signaler un bug</button>
+  </div>
+
+  <div id="adminScreen" class="glass-card hidden">
     <h2>Espace Admin</h2>
-    <button id="create-eleve" class="btn">Créer un élève</button>
-    <h3>Messages reçus (bugs & contestations)</h3>
-    <div id="admin-messages"></div>
-    <button onclick="logout()" class="btn">Déconnexion</button>
+    <p>Création d'élèves</p>
+    <input type="text" id="newEleveName" placeholder="Nom de l'élève">
+    <button class="live-button" onclick="createEleve()">Créer</button>
+    <div id="adminList"></div>
+    <button class="live-button" onclick="reportBug()">Signaler un bug</button>
   </div>
 
   <script>
     let currentUser = null;
-    let usersData = {};
+    let data = [];
 
-    fetch("users.json")
-      .then(res => res.json())
-      .then(data => usersData = data);
-    
-    document.getElementById("login-form").addEventListener("submit", e => {
-      e.preventDefault();
-      const id = document.getElementById("userId").value;
-      const pin = document.getElementById("userPin").value;
-
-      let user = [...usersData.eleves, ...usersData.prof].find(u => u.id === id && u.pin === pin);
-
-      if(user){
-        currentUser = user;
-        document.getElementById("login-container").classList.add("hidden");
-
-        if(usersData.eleves.find(u => u.id === user.id)){
-          document.getElementById("eleve-container").classList.remove("hidden");
-          document.getElementById("eleve-info").innerText = `Bienvenue ${user.name}`;
-        }
-        else if(user.id === "admindemo"){
-          document.getElementById("admin-container").classList.remove("hidden");
-        }
-        else{
-          document.getElementById("prof-container").classList.remove("hidden");
-        }
-      } else {
-        document.getElementById("login-error").innerText = "Identifiants incorrects.";
-      }
-    });
-
-    function logout(){
-      currentUser = null;
-      document.querySelectorAll(".glass-box").forEach(box => box.classList.add("hidden"));
-      document.getElementById("login-container").classList.remove("hidden");
+    async function loadData() {
+      const response = await fetch("data.json");
+      data = await response.json();
     }
-  <script>
-  document.querySelectorAll(".btn").forEach(btn => {
-    document.addEventListener("mousemove", e => {
-      const rect = btn.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      const distance = Math.sqrt(x*x + y*y);
 
-      if(distance < 200){ 
-        btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
-      } else {
-        btn.style.transform = "translate(0,0)";
+    function login() {
+      const role = document.getElementById("role").value;
+      document.getElementById("loginScreen").classList.add("hidden");
+      if (role === "eleve") {
+        document.getElementById("eleveScreen").classList.remove("hidden");
+        document.getElementById("eleveName").textContent = "Bonjour, " + document.getElementById("username").value;
+      } else if (role === "prof") {
+        document.getElementById("profScreen").classList.remove("hidden");
+        afficherEleves();
+      } else if (role === "admin") {
+        document.getElementById("adminScreen").classList.remove("hidden");
       }
-    });
-  });
-</script>
+    }
 
+    function reportBug() {
+      const message = prompt("Décrivez le bug ou proposez une nouveauté :");
+      if (message) {
+        alert("Votre message a été envoyé à l'admin !");
+      }
+    }
+
+    function contesterIncident() {
+      const msg = document.getElementById("contestMessage").value;
+      if (msg) {
+        alert("Votre contestation a été envoyée au professeur.");
+      }
+    }
+
+    function envoyerMessage() {
+      const msg = document.getElementById("mailMessage").value;
+      if (msg) {
+        alert("Message envoyé au professeur.");
+      }
+    }
+
+    function afficherEleves() {
+      const ul = document.getElementById("eleveList");
+      ul.innerHTML = "";
+      data.forEach(eleve => {
+        const li = document.createElement("li");
+        li.textContent = eleve.nom;
+        li.onclick = () => afficherDetails(eleve);
+        ul.appendChild(li);
+      });
+    }
+
+    function searchEleve() {
+      const query = document.getElementById("searchEleve").value.toLowerCase();
+      const ul = document.getElementById("eleveList");
+      ul.innerHTML = "";
+      data.filter(e => e.nom.toLowerCase().includes(query)).forEach(eleve => {
+        const li = document.createElement("li");
+        li.textContent = eleve.nom;
+        li.onclick = () => afficherDetails(eleve);
+        ul.appendChild(li);
+      });
+    }
+
+    function afficherDetails(eleve) {
+      document.getElementById("eleveDetails").classList.remove("hidden");
+      document.getElementById("detailName").textContent = eleve.nom;
+      document.getElementById("lastConnexion").textContent = eleve.derniereConnexion || "Inconnue";
+    }
+
+    function addIncident(type) {
+      alert("Incident ajouté : " + type);
+    }
+
+    function sendPrivateMessage() {
+      const msg = document.getElementById("privateMessage").value;
+      if (msg) {
+        alert("Message privé envoyé à l'élève.");
+      }
+    }
+
+    function createEleve() {
+      const name = document.getElementById("newEleveName").value;
+      if (name) {
+        data.push({ nom: name });
+        afficherEleves();
+        alert("Élève créé !");
+      }
+    }
+
+    document.addEventListener("mousemove", (e) => {
+      document.querySelectorAll(".live-button").forEach(btn => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px) scale(1.05)`;
+      });
+    });
+
+    loadData();
+  </script>
 </body>
 </html>
