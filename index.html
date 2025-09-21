@@ -1,307 +1,223 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Techn301 — Collège Charles Péguy (v0.5)</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <meta name="theme-color" content="#0f172a">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Techn301 — Collège Charles Péguy (v0.5 corrigé)</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<meta name="theme-color" content="#0f172a">
 </head>
 <body>
-  <div id="app" class="app">
 
-    <div id="loading" class="layer center">
-      <div class="glass-card loading-card">
-        <div class="logo">Techn301</div>
-        <h3>Chargement de la base de données JSON…</h3>
-        <div class="spinner" aria-hidden="true"></div>
-        <p class="muted">USERS.JSON UNFOUND ON MAIN BRANCHS</p>
-      </div>
+<div id="app" class="app">
+
+  <div id="loading" class="layer center">
+    <div class="glass-card loading-card">
+      <div class="logo">Techn301</div>
+      <h3>Chargement de la base de données JSON…</h3>
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="muted">USERS.JSON UNFOUND ON MAIN BRANCHS</p>
     </div>
-
-    <main id="main" class="hidden">
-      <header class="topbar glass">
-        <div class="brand">
-          <div class="logo-small">T301</div>
-          <div>
-            <div class="title">Techn301</div>
-            <div class="subtitle">Collège Charles Péguy</div>
-          </div>
-        </div>
-        <div class="top-actions">
-          <input id="globalSearch" class="search" placeholder="Rechercher élève..." aria-label="Recherche" />
-          <button id="openHelp" class="btn liquid">Aide</button>
-        </div>
-      </header>
-
-      <section class="centered hero">
-        <div class="glass-card hero-card">
-          <h1>Bienvenue sur Techn301, LE logiciel de gestion du cours de Technologie en 301</h1>
-          <p class="muted">Accèder à son espace — prof ou élève</p>
-          <div class="auth-row">
-            <button id="btnStart" class="btn big liquid">Entrer</button>
-            <a class="link-muted" href="#" id="demoLink">Voir une démo du service gratuite et rapide</a>
-          </div>
-        </div>
-      </section>
-
-      <section id="pages" class="pages">
-
-        <article id="pageLogin" class="card-panel hidden">
-          <h2>Connecter-vous (avec vos ID envoyés sur l'ENT)</h2>
-          <form id="loginForm" class="form">
-            <label>Identifiant
-              <input id="loginId" placeholder="ex : p.nom" required />
-            </label>
-            <label>PIN
-              <input id="loginPin" type="password" placeholder="Code PIN provisoire si première connexion au service" required />
-            </label>
-            <div class="form-row">
-              <button type="submit" class="btn liquid">Connexion</button>
-              <button type="button" id="btnDemoLogin" class="btn hollow">Se connecter en démo</button>
-            </div>
-            <p id="loginError" class="error hidden">L'Identifiant fourni ou le mot de passe est incorrect.</p>
-          </form>
-        </article>
-
-        <article id="pageStudent" class="card-panel hidden">
-          <div class="panel-header">
-            <h2 id="Welcome">Bienvenue sur votre espace</h2>
-            <div class="panel-actions">
-              <button class="btn danger" onclick="logout()">Déconnexion</button>
-            </div>
-          </div>
-
-          <div class="student-grid">
-            <div class="glass-card small">
-              <h3>Information te concerant</h3>
-              <p><strong>Identifiant :</strong> <span id="sId"></span></p>
-              <p><strong>Nom :</strong> <span id="sName"></span></p>
-              <p><strong>Dernière connexion :</strong> <span id="sLast">—</span></p>
-              <div id="firstLoginBox" class="boxed hidden">
-                <p>Choisi un mot de passe plus sécurisé (le code pin ne l'est pas, change ton PIN :</p>
-                <input id="newPin" placeholder="Nouveau PIN (4+)" />
-                <button class="btn liquid" onclick="changePin()">Changer le MDP</button>
-              </div>
-            </div>
-
-            <div class="glass-card large">
-              <h3>Ton suivi personnalisé par MME THABET.H</h3>
-              <ul id="studentlistdesession" class="list-plain"></ul>
-              <h4>Remarques</h4>
-              <ul id="studentRemarques" class="list-plain"></ul>
-            </div>
-          </div>
-        </article>
-
-        <article id="pageAdmin" class="card-panel hidden">
-          <div class="panel-header">
-            <h2>Gestion de la classe</h2>
-            <div class="panel-actions">
-              <button class="btn hollow" onclick="openImport()">Importer un CsV</button>
-              <button class="btn liquid" onclick="exportCSV()">Exporter un CSV</button>
-              <button class="btn danger" onclick="logoutAdmin()">Déconnexion</button>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="glass-card">
-              <h3>Créer / gérer ma séance</h3>
-              <label>Date de la séance <input type="date" id="sessionDate" /></label>
-              <div class="form-row">
-                <button class="btn liquid" onclick="createSession()">Créer séance</button>
-                <button class="btn hollow" onclick="renderSessions()">Voir séances</button>
-              </div>
-              <ul id="sessionsList" class="list-plain small"></ul>
-            </div>
-
-            <div class="glass-card">
-              <h3>Filtres & recherche</h3>
-              <input id="searchBox" placeholder="Filtrer par nom / id" oninput="renderAdminTable()" />
-              <div class="form-row">
-                <select id="filterLutin" onchange="renderAdminTable()">
-                  <option value="">Filtrer lutin</option>
-                  <option value="À jour">À jour</option>
-                  <option value="Non à jour">Non à jour</option>
-                </select>
-                <select id="filterStatut" onchange="renderAdminTable()">
-                  <option value="">Filtrer statut</option>
-                  <option>Présent</option>
-                  <option>Absent</option>
-                  <option>Retard</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-card full">
-            <h3>Liste des élèves</h3>
-            <div class="table-responsive">
-              <table id="adminTable" class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Nom</th><th>ID</th><th>PIN</th>
-                    <th>Remarques</th><th>Agit.</th><th>Bav.</th><th>Part.</th><th>Statut</th><th>Lutin</th><th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="adminTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </article>
-
-      </section>
-
-      <div id="toast" class="toast hidden"></div>
-    </main>
-
   </div>
 
+  <main id="main" class="hidden">
+    <header class="topbar glass">
+      <div class="brand">
+        <div class="logo-small">T301</div>
+        <div>
+          <div class="title">Techn301</div>
+          <div class="subtitle">Collège Charles Péguy</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <input id="globalSearch" class="search" placeholder="Rechercher élève..." aria-label="Recherche" />
+        <button id="openHelp" class="btn liquid">Aide</button>
+      </div>
+    </header>
+
+    <section class="centered hero">
+      <div class="glass-card hero-card">
+        <h1>Bienvenue sur Techn301</h1>
+        <p class="muted">Accéder à son espace — prof ou élève</p>
+        <div class="auth-row">
+          <button id="btnStart" class="btn big liquid">Entrer</button>
+          <a class="link-muted" href="#" id="demoLink">Voir une démo gratuite</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="pages" class="pages">
+
+      <article id="pageLogin" class="card-panel hidden">
+        <h2>Connectez-vous</h2>
+        <form id="loginForm" class="form">
+          <label>Identifiant
+            <input id="loginId" placeholder="ex : p.nom" required>
+          </label>
+          <label>PIN
+            <input id="loginPin" type="password" placeholder="Code PIN provisoire" required>
+          </label>
+          <div class="form-row">
+            <button type="submit" class="btn liquid">Connexion</button>
+            <button type="button" id="btnDemoLogin" class="btn hollow">Se connecter en démo</button>
+          </div>
+          <p id="loginError" class="error hidden">Identifiant ou PIN incorrect.</p>
+        </form>
+      </article>
+
+      <article id="pageStudent" class="card-panel hidden">
+        <div class="panel-header">
+          <h2 id="Welcome">Bienvenue sur votre espace</h2>
+          <div class="panel-actions">
+            <button class="btn danger" onclick="logout()">Déconnexion</button>
+          </div>
+        </div>
+
+        <div class="student-grid">
+          <div class="glass-card small">
+            <h3>Informations personnelles</h3>
+            <p><strong>Identifiant :</strong> <span id="sId"></span></p>
+            <p><strong>Nom :</strong> <span id="sName"></span></p>
+            <p><strong>Dernière connexion :</strong> <span id="sLast">—</span></p>
+            <div id="firstLoginBox" class="boxed hidden">
+              <p>Choisis un mot de passe plus sécurisé :</p>
+              <input id="newPin" placeholder="Nouveau PIN (4+)">
+              <button class="btn liquid" onclick="changePin()">Changer le PIN</button>
+            </div>
+          </div>
+
+          <div class="glass-card large">
+            <h3>Ton suivi personnalisé</h3>
+            <ul id="studentlistdesession" class="list-plain"></ul>
+            <h4>Remarques</h4>
+            <ul id="studentRemarques" class="list-plain"></ul>
+          </div>
+        </div>
+      </article>
+
+      <article id="pageAdmin" class="card-panel hidden">
+        <div class="panel-header">
+          <h2>Gestion de la classe</h2>
+          <div class="panel-actions">
+            <button class="btn hollow" onclick="openImport()">Importer CSV</button>
+            <button class="btn liquid" onclick="exportCSV()">Exporter CSV</button>
+            <button class="btn danger" onclick="logoutAdmin()">Déconnexion</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="glass-card">
+            <h3>Créer / gérer une séance</h3>
+            <label>Date de la séance <input type="date" id="sessionDate"></label>
+            <div class="form-row">
+              <button class="btn liquid" onclick="createSession()">Créer séance</button>
+              <button class="btn hollow" onclick="renderSessions()">Voir séances</button>
+            </div>
+            <ul id="sessionsList" class="list-plain small"></ul>
+          </div>
+
+          <div class="glass-card">
+            <h3>Filtres & recherche</h3>
+            <input id="searchBox" placeholder="Filtrer par nom / id" oninput="renderAdminTable()">
+            <div class="form-row">
+              <select id="filterLutin" onchange="renderAdminTable()">
+                <option value="">Filtrer lutin</option>
+                <option value="À jour">À jour</option>
+                <option value="Non à jour">Non à jour</option>
+              </select>
+              <select id="filterStatut" onchange="renderAdminTable()">
+                <option value="">Filtrer statut</option>
+                <option>Présent</option>
+                <option>Absent</option>
+                <option>Retard</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card full">
+          <h3>Liste des élèves</h3>
+          <div class="table-responsive">
+            <table id="adminTable" class="admin-table">
+              <thead>
+                <tr>
+                  <th>Nom</th><th>ID</th><th>PIN</th>
+                  <th>Remarques</th><th>Agit.</th><th>Bav.</th><th>Part.</th><th>Statut</th><th>Lutin</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
+  </main>
+</div>
+
 <script>
+const RAW_USER_URL='https://raw.githubusercontent.com/footfanclub91-commits/techn301/main/users.json';
+let USERS=null;
+let CURRENT=null;
+let SESSIONS=JSON.parse(localStorage.getItem('t301_sessions')||'[]');
 
-const RAW_USER_URL = 'https://raw.githubusercontent.com/footfanclub91-commits/techn301/main/users.json';
-let USERS = null;
-let CURRENT = null;
-let SESSIONS = JSON.parse(localStorage.getItem('t301_sessions') || '[]');
+const $=id=>document.getElementById(id);
+const show=el=>el&&(el.classList.remove('hidden'),el.style.display='block');
+const hide=el=>el&&(el.classList.add('hidden'),el.style.display='none');
+const toast=(t,ms=3000)=>{const tb=$('toast');tb.textContent=t;tb.classList.remove('hidden');tb.classList.add('show');setTimeout(()=>{tb.classList.add('hidden');tb.classList.remove('show');},ms)};
 
-const $ = id => document.getElementById(id);
-const show = el=> el && (el.classList.remove('hidden'), el.style.display='block');
-const hide = el=> el && (el.classList.add('hidden'), el.style.display='none');
-const toast = (t, ms=3000) => {
-  const tbox = $('toast');
-  tbox.textContent = t; tbox.classList.remove('hidden'); tbox.classList.add('show');
-  setTimeout(()=>{ tbox.classList.add('hidden'); tbox.classList.remove('show'); }, ms);
-};
+document.addEventListener('DOMContentLoaded',init);
 
-const loading = $('loading');
-const main = $('main');
-
-document.addEventListener('DOMContentLoaded', init);
 async function init(){
-  try {
-    let res = await fetch('users.json');
-    if(!res.ok) throw new Error('local fetch failed');
-    USERS = await res.json();
-  } catch(e) {
-    try {
-      let res2 = await fetch(RAW_USER_URL);
-      if(!res2.ok) throw new Error('raw fetch failed');
-      USERS = await res2.json();
-    } catch(err){
-      alert('Erreur chargement users.json — vérifie le fichier ou la connexion');
-      hide(loading);
-      return;
-    }
-  }
-
-  USERS.eleves = USERS.eleves || [];
-  USERS.prof = USERS.prof || [];
-
-  USERS.eleves.forEach(u => {
-    const saved = localStorage.getItem('user:'+u.id);
-    if(saved){
-      try { Object.assign(u, JSON.parse(saved)); } catch(e){}
-    } else {
-      u.remarques = u.remarques || [];
-      u.agitation = u.agitation || 0;
-      u.bavardages = u.bavardages || 0;
-      u.participation = u.participation || 0;
-      u.statut = u.statut || 'Présent';
-      u.lutin = u.lutin || 'À jour';
-    }
-  });
-
-  USERS.eleves.sort((a,b)=> a.name.localeCompare(b.name));
-
-  hide(loading);
-  show(main);
-  attachHandlers();
-  renderSessions();
+  try{let r=await fetch('users.json');if(!r.ok)throw 1;USERS=await r.json()}catch(e){try{let r2=await fetch(RAW_USER_URL);if(!r2.ok)throw 1;USERS=await r2.json()}catch(e){alert('Erreur chargement users.json');hide($('loading'));return}}
+  USERS.eleves=USERS.eleves||[];
+  USERS.prof=USERS.prof||[];
+  USERS.eleves.forEach(u=>{const s=localStorage.getItem('user:'+u.id);if(s)Object.assign(u,JSON.parse(s));else{u.remarques=[];u.agitation=0;u.bavardages=0;u.participation=0;u.statut='Présent';u.lutin='À jour'}})
+  USERS.eleves.sort((a,b)=>a.name.localeCompare(b.name));
+  hide($('loading'));show($('main'));attachHandlers();renderSessions();
 }
 
 function attachHandlers(){
-  $('btnStart').addEventListener('click', ()=>{
-    hide($('pages').previousElementSibling);
-    show($('pageLogin'));
-  });
-
-  const form = $('loginForm');
-  form.addEventListener('submit', e=>{
-    e.preventDefault();
-    login();
-  });
-
-  $('btnDemoLogin').addEventListener('click', ()=>{
-    if(USERS.prof && USERS.prof[0]){
-      doLogin(USERS.prof[0]);
-    } else toast('Pas de compte prof trouvé.');
-  });
-
-  $('globalSearch') && $('globalSearch').addEventListener('input', e=>{
-    const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll('.eleveRow').forEach(r=>{
-      r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
-    });
-  });
+  $('btnStart').addEventListener('click',()=>{hide($('btnStart').closest('.hero-card'));show($('pageLogin'))});
+  $('loginForm').addEventListener('submit',e=>{e.preventDefault();login()});
+  $('btnDemoLogin').addEventListener('click',()=>{if(USERS.prof&&USERS.prof[0])doLogin(USERS.prof[0]);else toast('Pas de compte prof trouvé.')});
+  $('globalSearch')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('.eleveRow').forEach(r=>{r.style.display=r.innerText.toLowerCase().includes(q)?'':'none'})});
 }
 
 function login(){
-  const id = $('loginId').value.trim();
-  const pin = $('loginPin').value.trim();
-  if(!USERS) { toast('Données non chargées'); return; }
-  let user = USERS.eleves.find(u=>u.id === id && u.pin === pin);
-  if(!user) user = USERS.prof.find(p=>p.id === id && p.pin === pin);
-  if(!user){ $('loginError').classList.remove('hidden'); return; }
+  const id=$('loginId').value.trim();
+  const pin=$('loginPin').value.trim();
+  if(!USERS){toast('Données non chargées');return}
+  let user=USERS.eleves.find(u=>u.id===id&&u.pin===pin)||USERS.prof.find(p=>p.id===id&&p.pin===pin);
+  if(!user){$('loginError').classList.remove('hidden');return}
   $('loginError').classList.add('hidden');
   doLogin(user);
 }
 
 function doLogin(user){
-  CURRENT = user;
-  sessionStorage.setItem('t301_current', JSON.stringify({id:user.id, time:Date.now()}));
+  CURRENT=user;
+  sessionStorage.setItem('t301_current',JSON.stringify({id:user.id,time:Date.now()}));
   hide($('pageLogin'));
-  if(USERS.prof.find(p=>p.id===user.id)){
-    show($('pageAdmin'));
-    renderAdminTable();
-    toast('Connecté en tant que professeur');
-  } else {
-    show($('pageStudent'));
-    fillStudentView();
-    toast('Connecté en tant qu\'élève');
-  }
+  if(USERS.prof.find(p=>p.id===user.id)){show($('pageAdmin'));renderAdminTable();toast('Connecté en tant que professeur')}else{show($('pageStudent'));fillStudentView();toast('Connecté en tant qu\'élève')}
 }
 
 function fillStudentView(){
-  $('sId').textContent = CURRENT.id || '';
-  $('sName').textContent = CURRENT.name || '';
-  $('sLast').textContent = CURRENT.lastLogin || '—';
-  const rem = $('studentRemarques'); rem.innerHTML = '';
-  (CURRENT.remarques || []).forEach(r=>{ const li=document.createElement('li'); li.textContent = r; rem.appendChild(li); });
-  const sessList = $('studentlistdesession'); sessList.innerHTML='';
-  SESSIONS.forEach(s=>{
-    const me = s.eleves?.find(e=>e.id===CURRENT.id);
-    const li = document.createElement('li');
-    li.textContent = `${s.date} — ${me ? `Part:${me.participation}, Ag:${me.agitation}, Abs:${me.absences||0}` : '—'}`;
-    sessList.appendChild(li);
-  });
-  if(CURRENT.firstLogin) show($('firstLoginBox')); else hide($('firstLoginBox'));
+  if(!CURRENT)return;
+  $('sId').textContent=CURRENT.id||'';
+  $('sName').textContent=CURRENT.name||'';
+  $('sLast').textContent=CURRENT.lastLogin||'—';
+  const rem=$('studentRemarques');rem.innerHTML='';(CURRENT.remarques||[]).forEach(r=>{const li=document.createElement('li');li.textContent=r;rem.appendChild(li)});
+  const sess=$('studentlistdesession');sess.innerHTML='';SESSIONS.forEach(s=>{const me=s.eleves?.find(e=>e.id===CURRENT.id);const li=document.createElement('li');li.textContent=`${s.date} — ${me?`Part:${me.participation}, Ag:${me.agitation}, Abs:${me.absences||0}`:'—'}`;sess.appendChild(li)});
+  CURRENT.firstLogin?show($('firstLoginBox')):hide($('firstLoginBox'));
 }
 
-function changePin(){
-  const np = $('newPin').value.trim();
-  if(np.length<4){ toast('PIN doit faire au moins 4 caractères'); return; }
-  CURRENT.pin = np;
-  CURRENT.firstLogin = false;
-  localStorage.setItem('user:'+CURRENT.id, JSON.stringify(CURRENT));
-  hide($('firstLoginBox'));
-  toast('PIN modifié');
-}
-
-function logout(){ sessionStorage.removeItem('t301_current'); location.reload(); }
-function logoutAdmin(){ sessionStorage.removeItem('t301_current'); location.reload(); }
-
+function changePin(){const np=$('newPin').value.trim();if(np.length<4){toast('PIN doit faire au moins 4 caractères');return}CURRENT.pin=np;CURRENT.firstLogin=false;localStorage.setItem('user:'+CURRENT.id,JSON.stringify(CURRENT));hide($('firstLoginBox'));toast('PIN modifié')}
+function logout(){sessionStorage.removeItem('t301_current');location.reload()}
+function logoutAdmin(){sessionStorage.removeItem('t301_current');location.reload()}
 </script>
+
 </body>
 </html>
