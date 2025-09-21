@@ -1,72 +1,104 @@
-body {
+body, html {
   margin: 0;
-  font-family: Arial, sans-serif;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', sans-serif;
   overflow: hidden;
-  background: radial-gradient(circle at 30% 30%, #a8e6ff, #ffffff, #c2f0ff);
+  background: #0c1e40;
 }
 
-body::before {
-  content: "";
-  position: absolute;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at 20% 40%, rgba(0,255,255,0.5), transparent 60%),
-              radial-gradient(circle at 70% 60%, rgba(173,216,230,0.4), transparent 70%),
-              radial-gradient(circle at 40% 80%, rgba(255,255,255,0.3), transparent 80%);
-  animation: aurora 20s infinite linear;
+.aurora-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(270deg, #00ffff, #b0e0e6, #ffffff);
+  background-size: 600% 600%;
+  animation: aurora 20s ease infinite;
   z-index: -1;
 }
 
 @keyframes aurora {
-  0%   { transform: translate(-10%, -10%) rotate(0deg); }
-  50%  { transform: translate(10%, 10%) rotate(180deg); }
-  100% { transform: translate(-10%, -10%) rotate(360deg); }
+  0% {background-position: 0% 50%;}
+  50% {background-position: 100% 50%;}
+  100% {background-position: 0% 50%;}
 }
 
-.glass-box {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-  width: 350px;
+.glass-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  padding: 40px;
+  color: #ffffff;
+  width: 400px;
+  max-width: 90%;
   text-align: center;
-  animation: fadeIn 0.8s ease-in-out;
+  box-shadow: 0 0 60px rgba(0, 255, 255, 0.2);
+  transition: all 0.3s ease;
 }
 
-.hidden { display: none; }
-
-input, textarea {
+input, select, textarea {
   width: 90%;
-  margin: 10px 0;
   padding: 10px;
+  margin: 10px 0;
+  border-radius: 12px;
   border: none;
-  border-radius: 8px;
+  outline: none;
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 14px;
 }
 
-.btn {
-  display: inline-block;
+textarea {
+  resize: none;
+  height: 80px;
+}
+
+button.live-button {
+  padding: 12px 25px;
   margin: 10px;
-  padding: 12px 20px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
-  color: white;
+  border-radius: 15px;
+  background: rgba(0,255,255,0.3);
+  color: #fff;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
+  transition: all 0.2s ease;
   position: relative;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.btn:hover {
-  box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+button.live-button:hover {
+  background: rgba(0,255,255,0.5);
+  box-shadow: 0 0 20px rgba(0,255,255,0.5);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+.hidden {
+  display: none;
+}
+
+.stats p {
+  margin: 5px 0;
+}
+
+#eleveList li {
+  list-style: none;
+  margin: 5px 0;
+  padding: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#eleveList li:hover {
+  background: rgba(0,255,255,0.3);
+  transform: translateY(-3px);
 }
