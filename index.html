@@ -1,310 +1,412 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>C'est l'heure de La techno ! by Techn301</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Techn301 — Dashboard</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="background"></div>
-
-<div id="loadingScreen">
-  <h1>Chargement de la page de connexion en cours...</h1>
-  <div class="loader"></div>
+<div id="loading" class="overlay">
+  <div class="loaderBox">
+    <div class="spinner"></div>
+    <div class="loadingText">Chargement des données...</div>
+  </div>
 </div>
 
-<div class="glass-card" id="loginCard" style="display:none">
-  <h1>Connectez vous à votre espace</h1>
-  <input type="text" id="userId" placeholder="Identifiant">
-  <input type="password" id="userPin" placeholder="PIN">
-  <button id="loginBtn">Se connecter</button>
-  <div id="errorMsg"></div>
-</div>
+<header id="topbar" class="hidden">
+  <div class="brand">
+    <div class="logo">T301</div>
+    <div class="title">Techn301 — Collège Charles Péguy</div>
+  </div>
+  <nav class="nav">
+    <button class="navBtn active" data-view="dashboard">Tableau</button>
+    <button class="navBtn" data-view="notes">Notes</button>
+    <button class="navBtn" data-view="devoirs">Cahier & Devoirs</button>
+    <button class="navBtn" data-view="cours">Contenu du cours</button>
+    <div class="navRight">
+      <div id="userBadge"></div>
+      <button id="logoutBtn" class="pill">Se déconnecter</button>
+    </div>
+  </nav>
+</header>
 
-<div class="glass-card" id="eleveCard" style="display:none;">
-  <h1>Bienvenue !</h1>
-  <div id="eleveName"></div>
+<main id="app" class="main hidden">
+  <section id="loginView" class="view center">
+    <div class="card narrow">
+      <h1>Connexion</h1>
+      <input id="loginId" placeholder="Identifiant (ex: a.benikiker)" />
+      <input id="loginPin" placeholder="PIN" type="password" />
+      <div class="row">
+        <button id="loginBtn" class="cta">Se connecter</button>
+        <button id="demoBtn" class="muted">Démo</button>
+      </div>
+      <div id="loginError" class="error"></div>
+    </div>
+  </section>
 
-  <h2>Mes observations et performances</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Participation</th>
-        <th>Bavardages</th>
-        <th>Agitation</th>
-        <th>Lutin à jour</th>
-        <th>Total problèmes</th>
-      </tr>
-    </thead>
-    <tbody id="eleveTbody"></tbody>
-  </table>
+  <section id="dashboardView" class="view hidden">
+    <div class="panel">
+      <div class="panelHeader">
+        <h2>Tableau des élèves</h2>
+        <div class="panelActions">
+          <input id="searchStudent" placeholder="Rechercher élève..." />
+          <button id="exportBtn" class="small">Exporter CSV</button>
+          <button id="newSessionBtn" class="small">Nouvelle séance</button>
+        </div>
+      </div>
+      <div class="tableWrap">
+        <table id="studentsTable">
+          <thead>
+            <tr>
+              <th>Élève</th>
+              <th>Participation</th>
+              <th>Bavardages</th>
+              <th>Agitation</th>
+              <th>Lutin</th>
+              <th>Total</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-  <h2>Mes notes</h2>
-  <table>
-    <thead>
-      <tr><th>Devoir</th><th>Note</th></tr>
-    </thead>
-    <tbody id="eleveNotes"></tbody>
-  </table>
-  <div id="eleveMoyenne"></div>
+  <section id="notesView" class="view hidden">
+    <div class="panel">
+      <div class="panelHeader">
+        <h2>Notes & Moyennes</h2>
+        <div class="panelActions">
+          <button id="addNoteBtn" class="small">Ajouter note (prof)</button>
+          <select id="selectStudentForNote"><option value="">Tous les élèves</option></select>
+        </div>
+      </div>
+      <div id="notesContent" class="stack"></div>
+    </div>
+  </section>
 
-  <h2>Cahier de texte</h2>
-  <ul id="eleveCahier"></ul>
+  <section id="devoirsView" class="view hidden">
+    <div class="panel">
+      <div class="panelHeader">
+        <h2>Cahier de textes & Devoirs</h2>
+        <div class="panelActions">
+          <button id="addDevoirBtn" class="small">Ajouter devoir</button>
+        </div>
+      </div>
+      <div id="devoirsList" class="stack"></div>
+    </div>
+  </section>
 
-  <h2>Contester un événement</h2>
-  <textarea id="contesteMsg" placeholder="Écrire votre message..."></textarea>
-  <button id="sendConteste">Envoyer</button>
-  <div id="contesteInfo"></div>
-</div>
+  <section id="coursView" class="view hidden">
+    <div class="panel">
+      <div class="panelHeader">
+        <h2>Contenu du cours</h2>
+        <div class="panelActions">
+          <button id="addCoursBtn" class="small">Ajouter contenu (prof)</button>
+        </div>
+      </div>
+      <div id="coursList" class="stack"></div>
+    </div>
+  </section>
 
-<div class="glass-card" id="profCard" style="display:none;">
-  <h1>Bienvenue !</h1>
-  <div id="profName"></div>
-
-  <h2>Liste élèves</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Nom</th>
-        <th>Participation</th>
-        <th>Bavardages</th>
-        <th>Agitation</th>
-        <th>Lutin à jour</th>
-        <th>Observations</th>
-        <th>Total problèmes</th>
-      </tr>
-    </thead>
-    <tbody id="elevesTbody"></tbody>
-  </table>
-
-  <h2>Gestion des notes</h2>
-  <button id="addNote">Ajouter une note</button>
-  <div id="notesList"></div>
-
-  <h2>Gestion des devoirs</h2>
-  <button id="addDevoir">Ajouter un devoir</button>
-  <div id="devoirsList"></div>
-
-  <h2>Cahier de texte</h2>
-  <button id="addCours">Ajouter contenu de cours</button>
-  <div id="coursList"></div>
-
-  <h2>Ajouter une séance</h2>
-  <button id="addSeance">Ajouter séance</button>
-  <div id="seancesList"></div>
-
-  <h2>Signaler un problème</h2>
-  <textarea id="contesteMsgProf" placeholder="Écrire votre message..."></textarea>
-  <button id="sendContesteProf">Envoyer</button>
-  <div id="contesteInfoProf"></div>
-
-  <button id="exportCSV">Exporter CSV tableau</button>
-</div>
+  <div id="toast" class="toast hidden"></div>
+</main>
 
 <script>
-let users=null;
-let state={}, seances=[], notes={}, devoirs=[], cours=[];
-const loadingScreen=document.getElementById('loadingScreen');
-const loginCard=document.getElementById('loginCard');
-const eleveCard=document.getElementById('eleveCard');
-const profCard=document.getElementById('profCard');
-let currentUser=null;
+const RAW = 'user.json';
+let USERS = null;
+let STATE = { students: {}, sessions: [], notes: {}, devoirs: [], cours: [] };
+let CURRENT = null;
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
 
-fetch('user.json')
-.then(r=>r.json())
-.then(d=>{
-  users=d;
-  users.eleves.forEach(e=>{
-    state[e.id]={participation:0,bav:0,agi:0,lutin:true,obs:""};
-    notes[e.id]=[];
-  });
-  loadingScreen.style.display='none';
-  loginCard.style.display='block';
-})
-.catch(()=>{loadingScreen.innerHTML="<h1>Erreur : user.json introuvable</h1>";});
-
-document.getElementById('loginBtn').addEventListener('click',()=>{
-  if(!users){document.getElementById('errorMsg').textContent="JSON non chargé"; return;}
-  const id=document.getElementById('userId').value.trim();
-  const pin=document.getElementById('userPin').value.trim();
-  let found=null;
-  for(const u of [...users.eleves,...users.prof]){if(u.id===id&&u.pin===pin){found=u;break;}}
-  if(found){
-    currentUser=found;
-    loginCard.style.display='none';
-    if(users.prof.some(p=>p.id===found.id)){
-      profCard.style.display='block';
-      document.getElementById('profName').textContent="Connecté : "+found.name;
-      renderProfTable();
-      renderSeances();
-      renderNotes();
-      renderDevoirs();
-      renderCours();
-    }else{
-      eleveCard.style.display='block';
-      document.getElementById('eleveName').textContent="Connecté : "+found.name;
-      renderEleveTable();
-      renderEleveNotes();
-      renderEleveCahier();
-    }
-  }else{document.getElementById('errorMsg').textContent="Identifiant ou PIN incorrect";}
-});
-
-function renderEleveTable(){
-  const tbody=document.getElementById('eleveTbody'); tbody.innerHTML='';
-  const s=state[currentUser.id];
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${s.participation}</td><td>${s.bav}</td><td>${s.agi}</td><td>${s.lutin?'Oui':'Non'}</td><td>${s.bav+s.agi+(s.lutin?0:1)}</td>`;
-  tbody.appendChild(tr);
+function showToast(t){
+  const el = $('#toast');
+  el.textContent = t;
+  el.classList.remove('hidden');
+  setTimeout(()=>el.classList.add('hidden'),3000);
 }
 
-function renderProfTable(){
-  const tbody=document.getElementById('elevesTbody'); tbody.innerHTML='';
-  users.eleves.forEach(e=>{
-    const s=state[e.id]; const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${e.name}</td>
-    <td><input type="number" value="${s.participation}" min="0" data-id="${e.id}" data-key="participation"></td>
-    <td><input type="number" value="${s.bav}" min="0" data-id="${e.id}" data-key="bav"></td>
-    <td><input type="number" value="${s.agi}" min="0" data-id="${e.id}" data-key="agi"></td>
-    <td><input type="checkbox" ${s.lutin?'checked':''} data-id="${e.id}" data-key="lutin"></td>
-    <td><input type="text" value="${s.obs}" data-id="${e.id}" data-key="obs"></td>
-    <td>${s.bav+s.agi+(s.lutin?0:1)}</td>`;
+async function loadUsers(){
+  try{
+    const r = await fetch(RAW);
+    if(!r.ok) throw new Error();
+    USERS = await r.json();
+  }catch(e){
+    USERS = { eleves: [], prof: [] };
+  }
+  USERS.eleves.forEach(e=>{
+    if(!STATE.students[e.id]) STATE.students[e.id] = { participation:0, bav:0, agi:0, lutin:true, obs:[] };
+    if(!STATE.notes[e.id]) STATE.notes[e.id] = [];
+  });
+  $('#loading').classList.add('hidden');
+  $('#topbar').classList.remove('hidden');
+  $('#app').classList.remove('hidden');
+  showView('loginView');
+  populateStudentSelect();
+}
+
+function populateStudentSelect(){
+  const sel = $('#selectStudentForNote');
+  sel.innerHTML = '<option value="">Tous les élèves</option>';
+  USERS.eleves.forEach(e=>{
+    const opt = document.createElement('option');
+    opt.value = e.id; opt.textContent = e.name;
+    sel.appendChild(opt);
+  });
+}
+
+function showView(id){
+  $$('.view').forEach(v=>v.classList.add('hidden'));
+  $('#'+id).classList.remove('hidden');
+  $$('.navBtn').forEach(b=>b.classList.remove('active'));
+  $(`.navBtn[data-view="${id.replace('View','')}"]`)?.classList.add('active');
+}
+
+function renderStudents(filter=''){
+  const tbody = $('#studentsTable tbody');
+  tbody.innerHTML = '';
+  USERS.eleves.forEach(e=>{
+    if(filter && !e.name.toLowerCase().includes(filter.toLowerCase()) && !e.id.includes(filter)) return;
+    const s = STATE.students[e.id];
+    const total = (s.bav||0)+(s.agi||0)+((s.lutin)?0:1);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="name">${e.name}<div class="sub">${e.id}</div></td>
+      <td><button class="circle add" data-id="${e.id}" data-key="participation">＋</button> <span>${s.participation}</span> <button class="circle sub" data-id="${e.id}" data-key="participation">－</button></td>
+      <td><button class="circle add" data-id="${e.id}" data-key="bav">＋</button> <span>${s.bav}</span> <button class="circle sub" data-id="${e.id}" data-key="bav">－</button></td>
+      <td><button class="circle add" data-id="${e.id}" data-key="agi">＋</button> <span>${s.agi}</span> <button class="circle sub" data-id="${e.id}" data-key="agi">－</button></td>
+      <td><input type="checkbox" data-id="${e.id}" class="chkLutin" ${s.lutin?'checked':''}></td>
+      <td>${total}</td>
+      <td class="${total>=3?'warn':'ok'}">${total>=3?'⚠ Heure de colle':'OK'}</td>
+      <td><button class="small reset" data-id="${e.id}">Réinit</button> <button class="small profile" data-id="${e.id}">Voir</button></td>
+    `;
     tbody.appendChild(tr);
   });
-  document.querySelectorAll('#elevesTbody input').forEach(input=>{
-    input.addEventListener('change',()=>{
-      const id=input.dataset.id; const key=input.dataset.key;
-      if(key==='lutin') state[id][key]=input.checked;
-      else if(['participation','bav','agi'].includes(key)) state[id][key]=parseInt(input.value)||0;
-      else state[id][key]=input.value;
-      renderProfTable();
-    });
+  attachTableHandlers();
+}
+
+function attachTableHandlers(){
+  $$('.circle.add').forEach(b=>{
+    b.onclick = ()=>{ const id=b.dataset.id, k=b.dataset.key; STATE.students[id][k]=(STATE.students[id][k]||0)+1; persist(); renderStudents($('#searchStudent').value); };
+  });
+  $$('.circle.sub').forEach(b=>{
+    b.onclick = ()=>{ const id=b.dataset.id, k=b.dataset.key; STATE.students[id][k]=Math.max(0,(STATE.students[id][k]||0)-1); persist(); renderStudents($('#searchStudent').value); };
+  });
+  $$('.chkLutin').forEach(cb=>{
+    cb.onchange = ()=>{ STATE.students[cb.dataset.id].lutin = cb.checked; persist(); renderStudents($('#searchStudent').value); };
+  });
+  $$('.reset').forEach(b=>{ b.onclick = ()=>{ const id=b.dataset.id; STATE.students[id] = { participation:0,bav:0,agi:0,lutin:true,obs:[] }; persist(); renderStudents($('#searchStudent').value); showToast('Réinitialisé'); }; });
+  $$('.profile').forEach(b=>{ b.onclick = ()=>{ const id=b.dataset.id; openProfile(id); }; });
+}
+
+function openProfile(id){
+  const e = USERS.eleves.find(x=>x.id===id);
+  const s = STATE.students[id];
+  const notes = STATE.notes[id]||[];
+  let html = `<h3>${e.name}</h3><p>ID: ${e.id}</p><p>Participation: ${s.participation}</p><p>Bavardages: ${s.bav}</p><p>Agitation: ${s.agi}</p><p>Lutin: ${s.lutin?'Oui':'Non'}</p>`;
+  html += `<h4>Notes</h4><ul>${notes.map(n=>`<li>${n.nom} — ${n.val}/20</li>`).join('')}</ul>`;
+  const w = window.open('', '_blank', 'width=600,height=600');
+  w.document.body.innerHTML = `<pre style="font-family:inherit;padding:20px">${html}</pre>`;
+}
+
+function persist(){
+  localStorage.setItem('t301_state', JSON.stringify(STATE));
+}
+
+function restore(){
+  const s = localStorage.getItem('t301_state');
+  if(s) STATE = JSON.parse(s);
+}
+
+function setupNav(){
+  $$('.navBtn').forEach(b=>{
+    b.onclick = ()=>{ const view = b.dataset.view; showView(view+'View'); };
+  });
+  $('#logoutBtn').onclick = ()=>{ location.reload(); };
+}
+
+function loginFlow(){
+  $('#loginBtn').onclick = ()=>{
+    const id = $('#loginId').value.trim();
+    const pin = $('#loginPin').value.trim();
+    const user = (USERS.eleves.find(u=>u.id===id && u.pin===pin) || USERS.prof.find(u=>u.id===id && u.pin===pin));
+    if(!user){ $('#loginError').textContent = 'Identifiant ou PIN incorrect'; return; }
+    CURRENT = user;
+    $('#userBadge').textContent = user.name;
+    $('#loginError').textContent = '';
+    showView('dashboardView');
+    renderStudents();
+    renderNotesView();
+    renderDevoirsView();
+    renderCoursView();
+    if(USERS.prof.some(p=>p.id===user.id)) enableProfMode();
+    else enableEleveMode();
+  };
+  $('#demoBtn').onclick = ()=>{
+    if(USERS.prof && USERS.prof[0]){ CURRENT = USERS.prof[0]; $('#userBadge').textContent = CURRENT.name; showView('dashboardView'); renderStudents(); enableProfMode(); } else showToast('Pas de compte demo');
+  };
+}
+
+function enableProfMode(){
+  $('.nav').classList && $('.nav').classList.add('profMode');
+  $('#addNoteBtn').style.display = 'inline-block';
+  $('#addDevoirBtn').style.display = 'inline-block';
+  $('#addCoursBtn').style.display = 'inline-block';
+}
+
+function enableEleveMode(){
+  $('#addNoteBtn').style.display = 'none';
+  $('#addDevoirBtn').style.display = 'none';
+  $('#addCoursBtn').style.display = 'none';
+}
+
+function renderNotesView(){
+  const cont = $('#notesContent'); cont.innerHTML = '';
+  USERS.eleves.forEach(e=>{
+    const arr = STATE.notes[e.id] || [];
+    const moy = arr.length ? (arr.reduce((a,b)=>a+b.val,0)/arr.length).toFixed(2) : '—';
+    const card = document.createElement('div');
+    card.className = 'noteCard';
+    card.innerHTML = `<div class="noteHead"><strong>${e.name}</strong><span>Moy: ${moy}</span></div><div class="noteBody">${arr.map(n=>`<div>${n.nom} — ${n.val}/20</div>`).join('')}</div>`;
+    cont.appendChild(card);
   });
 }
 
-document.getElementById('addNote').addEventListener('click',()=>{
-  const nom=prompt("Nom du devoir ?");
-  if(!nom)return;
-  users.eleves.forEach(e=>{
-    const note=prompt("Note de "+e.name+" sur 20 ?");
-    if(note!==null) notes[e.id].push({nom:nom,val:parseFloat(note)||0});
-  });
-  renderNotes();
-});
-
 function renderNotes(){
-  const div=document.getElementById('notesList'); div.innerHTML='';
-  users.eleves.forEach(e=>{
-    const n=notes[e.id]; let moy=0;
-    if(n.length>0) moy=(n.reduce((a,b)=>a+b.val,0)/n.length).toFixed(2);
-    const p=document.createElement('p');
-    p.textContent=`${e.name} : ${n.map(x=>x.nom+"="+x.val).join(", ")} | Moyenne : ${moy}`;
-    div.appendChild(p);
-  });
+  renderNotesView();
+  renderEleveNotes();
 }
 
 function renderEleveNotes(){
-  const tbody=document.getElementById('eleveNotes'); tbody.innerHTML='';
-  const n=notes[currentUser.id]; let moy=0;
-  n.forEach(x=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${x.nom}</td><td>${x.val}</td>`;
-    tbody.appendChild(tr);
-  });
-  if(n.length>0) moy=(n.reduce((a,b)=>a+b.val,0)/n.length).toFixed(2);
-  document.getElementById('eleveMoyenne').textContent="Moyenne générale : "+moy+"/20";
+  if(!CURRENT) return;
+  const cont = $('#notesContent');
+  if(USERS.eleves.some(x=>x.id===CURRENT.id)){
+    const arr = STATE.notes[CURRENT.id] || [];
+    const moy = arr.length ? (arr.reduce((a,b)=>a+b.val,0)/arr.length).toFixed(2) : '—';
+    cont.innerHTML = `<div class="noteCard"><div class="noteHead"><strong>Mes notes</strong><span>Moy: ${moy}</span></div><div class="noteBody">${arr.map(n=>`<div>${n.nom} — ${n.val}/20</div>`).join('')}</div></div>`;
+  }
 }
 
-document.getElementById('addDevoir').addEventListener('click',()=>{
-  const nom=prompt("Titre du devoir ?");
-  if(!nom)return;
-  devoirs.push({titre:nom,statut:"À rendre"});
-  renderDevoirs();
+$('#addNoteBtn')?.addEventListener('click',()=>{
+  const titre = prompt('Nom de la note / contrôle');
+  if(!titre) return;
+  USERS.eleves.forEach(e=>{
+    const val = prompt(`${e.name} — note sur 20 :`);
+    const v = parseFloat(val);
+    if(!isNaN(v)) STATE.notes[e.id].push({nom:titre,val:Math.max(0,Math.min(20,v))});
+  });
+  persist();
+  renderNotes();
+  showToast('Notes ajoutées');
 });
 
-function renderDevoirs(){
-  const div=document.getElementById('devoirsList'); div.innerHTML='';
-  devoirs.forEach((d,i)=>{
-    const p=document.createElement('p');
-    p.textContent=d.titre+" ("+d.statut+")";
-    div.appendChild(p);
-  });
-}
-
-function renderEleveCahier(){
-  const ul=document.getElementById('eleveCahier'); ul.innerHTML='';
-  cours.forEach(c=>{
-    const li=document.createElement('li');
-    li.textContent=c.titre+" : "+c.contenu;
-    ul.appendChild(li);
+function renderNotesView(){
+  const cont = $('#notesContent'); cont.innerHTML = '';
+  USERS.eleves.forEach(e=>{
+    const arr = STATE.notes[e.id]||[];
+    const moy = arr.length ? (arr.reduce((a,b)=>a+b.val,0)/arr.length).toFixed(2) : '—';
+    const el = document.createElement('div');
+    el.className = 'noteCard';
+    el.innerHTML = `<div class="noteHead"><div>${e.name}</div><div>Moyenne: ${moy}</div></div><div class="noteBody">${arr.length?arr.map(n=>`<div>${n.nom} — ${n.val}/20</div>`).join(''): '<div class="muted">Aucune note</div>'}</div>`;
+    cont.appendChild(el);
   });
 }
 
-document.getElementById('addCours').addEventListener('click',()=>{
-  const titre=prompt("Nom du cours ?");
-  const contenu=prompt("Contenu du cours ?");
-  if(titre&&contenu) cours.push({titre,contenu});
-  renderCours();
+$('#addDevoirBtn')?.addEventListener('click',()=>{
+  const titre = prompt('Titre du devoir');
+  const date = prompt('Date (YYYY-MM-DD)');
+  const desc = prompt('Description');
+  if(!titre) return;
+  STATE.devoirs.push({titre,date,desc,statuts:{}});
+  USERS.eleves.forEach(e=>STATE.devoirs[STATE.devoirs.length-1].statuts[e.id]='À rendre');
+  persist();
+  renderDevoirsView();
+  showToast('Devoir ajouté');
 });
 
-function renderCours(){
-  const div=document.getElementById('coursList'); div.innerHTML='';
-  cours.forEach(c=>{
-    const p=document.createElement('p');
-    p.textContent=c.titre+" : "+c.contenu;
-    div.appendChild(p);
+function renderDevoirsView(){
+  const div = $('#devoirsList'); div.innerHTML = '';
+  STATE.devoirs.forEach((d,i)=>{
+    const card = document.createElement('div'); card.className='devoirCard';
+    card.innerHTML = `<div class="devoirHead"><strong>${d.titre}</strong><span>${d.date||''}</span></div><div class="devoirBody">${d.desc||''}</div>`;
+    if(CURRENT && USERS.prof.some(p=>p.id===CURRENT.id)){
+      const btn = document.createElement('button'); btn.textContent='Modifier statut'; btn.onclick = ()=>{
+        USERS.eleves.forEach(e=>{ const s = prompt(`Statut ${e.name} (À rendre / Rendu / Corrigé)`); if(s) d.statuts[e.id]=s; });
+        persist(); renderDevoirsView();
+      };
+      card.appendChild(btn);
+    } else {
+      const status = d.statuts[CURRENT.id] || '—';
+      const p = document.createElement('div'); p.className='muted'; p.textContent = 'Statut: '+status; card.appendChild(p);
+    }
+    div.appendChild(card);
   });
 }
 
-document.getElementById('sendConteste').addEventListener('click',()=>{
-  const msg=document.getElementById('contesteMsg').value.trim();
-  if(msg.length===0){document.getElementById('contesteInfo').textContent="Veuillez écrire un message.";return;}
-  document.getElementById('contesteInfo').textContent="Message envoyé : "+msg;
-  document.getElementById('contesteMsg').value='';
+$('#addCoursBtn')?.addEventListener('click',()=>{
+  const titre = prompt('Titre du contenu');
+  const contenu = prompt('Texte / résumé');
+  if(!titre || !contenu) return;
+  STATE.cours.push({titre,contenu,created: new Date().toISOString()});
+  persist(); renderCoursView();
+  showToast('Contenu ajouté');
 });
 
-document.getElementById('sendContesteProf').addEventListener('click',()=>{
-  const msg=document.getElementById('contesteMsgProf').value.trim();
-  if(msg.length===0){document.getElementById('contesteInfoProf').textContent="Veuillez écrire un message.";return;}
-  document.getElementById('contesteInfoProf').textContent="Message envoyé : "+msg;
-  document.getElementById('contesteMsgProf').value='';
-});
+function renderCoursView(){
+  const div = $('#coursList'); div.innerHTML = '';
+  STATE.cours.forEach(c=>{
+    const card = document.createElement('div'); card.className='coursCard';
+    card.innerHTML = `<div class="coursHead"><strong>${c.titre}</strong><span>${new Date(c.created).toLocaleString()}</span></div><div class="coursBody">${c.contenu}</div>`;
+    div.appendChild(card);
+  });
+}
 
-document.getElementById('addSeance').addEventListener('click',()=>{
-  const nom=prompt("Nom de la séance");
-  if(!nom||nom.trim()==="")return;
-  const seance={nom:nom,participants:users.eleves.map(e=>({id:e.id,name:e.name,presente:false}))};
-  seances.push(seance);
-  renderSeances();
+$('#newSessionBtn')?.addEventListener('click',()=>{
+  const nom = prompt('Titre séance');
+  if(!nom) return;
+  const s = {nom,participants:USERS.eleves.map(e=>({id:e.id,name:e.name,presente:false}))};
+  STATE.sessions.push(s); persist(); renderSessions();
+  showToast('Séance créée');
 });
 
 function renderSeances(){
-  const div=document.getElementById('seancesList'); div.innerHTML='';
-  seances.forEach((s)=>{
-    const sDiv=document.createElement('div'); sDiv.style.marginBottom='10px';
-    const t=document.createElement('h3'); t.textContent=s.nom; sDiv.appendChild(t);
-    s.participants.forEach(p=>{
-      const c=document.createElement('label'); c.style.display='block'; c.style.cursor='pointer';
-      const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=p.presente;
-      cb.addEventListener('change',()=>{p.presente=cb.checked;});
-      c.appendChild(cb); c.appendChild(document.createTextNode(" "+p.name));
-      sDiv.appendChild(c);
+  const div = $('#seancesList'); if(!div) return; div.innerHTML = '';
+  STATE.sessions.forEach((s,idx)=>{
+    const wrap = document.createElement('div'); wrap.className='sessionCard';
+    const head = document.createElement('div'); head.className='sessionHead'; head.textContent = s.nom;
+    const body = document.createElement('div'); s.participants.forEach(p=>{
+      const lbl = document.createElement('label'); lbl.innerHTML = `<input type="checkbox" data-session="${idx}" data-id="${p.id}" ${p.presente?'checked':''}> ${p.name}`;
+      body.appendChild(lbl);
     });
-    div.appendChild(sDiv);
+    wrap.appendChild(head); wrap.appendChild(body); div.appendChild(wrap);
   });
 }
 
-document.getElementById('exportCSV').addEventListener('click',()=>{
-  let csv='Nom,Participation,Bavardages,Agitation,Lutin à jour,Observations,Total problèmes\n';
-  users.eleves.forEach(e=>{
-    const s=state[e.id];
-    csv+=`${e.name},${s.participation},${s.bav},${s.agi},${s.lutin?'Oui':'Non'},${s.obs},${s.bav+s.agi+(s.lutin?0:1)}\n`;
-  });
-  const blob=new Blob([csv],{type:'text/csv'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='classe301_export.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+$('#searchStudent')?.addEventListener('input',()=>{ renderStudents($('#searchStudent').value); });
+
+$('#exportBtn')?.addEventListener('click',()=>{
+  let csv = 'Nom,Participation,Bavardages,Agitation,Lutin,Total\n';
+  USERS.eleves.forEach(e=>{ const s = STATE.students[e.id]; const total=(s.bav||0)+(s.agi||0)+((s.lutin)?0:1); csv+=`${e.name},${s.participation},${s.bav},${s.agi},${s.lutin?'Oui':'Non'},${total}\n`; });
+  const blob = new Blob([csv],{type:'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='export.csv'; a.click(); URL.revokeObjectURL(url);
 });
+
+restore();
+loadUsers();
+setupNav();
+loginFlow();
+renderNotes();
+renderDevoirsView();
+renderCoursView();
+renderSeances();
+
+function restore(){
+  const s = localStorage.getItem('t301_state'); if(s) STATE = JSON.parse(s);
+}
+function persist(){ localStorage.setItem('t301_state', JSON.stringify(STATE)); }
 </script>
 </body>
 </html>
