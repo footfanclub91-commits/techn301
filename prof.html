@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Techn301 — Espace Prof</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">T301</div>
+        <div style="color:white">
+          <div class="h-title">Espace Prof</div>
+          <div style="opacity:0.85;color:#e6eefc;font-size:13px">Gérer élèves • Observations • Documents</div>
+        </div>
+      </div>
+      <div class="top-controls">
+        <div id="clock" class="clock">--/--/---- --:--:--</div>
+        <div id="userBadge" class="user-badge">Prof</div>
+        <button id="logout" class="btn muted">Déconnexion</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Tableau élèves</div>
+            <div style="display:flex;gap:8px">
+              <input id="searchFamily" class="search" placeholder="Nom de famille à marquer">
+              <button id="markFamilyBtn" class="btn muted small-btn">Marquer</button>
+              <select id="markType" class="select">
+                <option value="bavardage">Bavardage</option>
+                <option value="agitation">Agitation</option>
+                <option value="participation">Participation</option>
+                <option value="autre">Autre</option>
+              </select>
+              <button id="applyMarked" class="btn small-btn">Appliquer</button>
+            </div>
+          </div>
+          <div style="margin-top:12px" id="studentsWrap">
+            <table class="table" id="studentsTable">
+              <thead><tr><th>Élève</th><th>Participation</th><th>Bavardage</th><th>Agitation</th><th>Marqué</th><th>Observations</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="notesPanel" class="card hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Notes globales</div>
+            <div class="controls"><button id="addNoteGlobal" class="btn">Ajouter note générale</button></div>
+          </div>
+          <div id="notesList" style="margin-top:10px"></div>
+        </div>
+
+        <div id="devoirsPanel" class="card" style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Devoirs</div>
+            <div style="display:flex;gap:8px">
+              <input id="newDevoir" class="input" placeholder="Titre devoir">
+              <button id="addDevoirBtn" class="btn">Ajouter</button>
+            </div>
+          </div>
+          <div id="devoirsList" style="margin-top:10px"></div>
+        </div>
+
+        <div id="coursPanel" class="card hidden" style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Cours</div>
+            <div style="display:flex;gap:8px">
+              <input id="newCours" class="input" placeholder="Titre cours">
+              <button id="addCoursBtn" class="btn">Ajouter</button>
+            </div>
+          </div>
+          <div id="coursList" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div style="font-weight:700">Messagerie</div>
+          <div class="chatbox" id="chatBox"></div>
+          <textarea id="chatText" rows="3" class="input" placeholder="Écrire un message..."></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="sendChat" class="btn">Envoyer</button>
+            <button id="clearChat" class="btn muted">Vider</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div style="font-weight:700">Documents (1 Go)</div>
+          <input id="fileUpload" type="file" multiple style="margin-top:8px">
+          <div class="progress"><i id="progressBar"></i></div>
+          <div id="usedText" class="kv"></div>
+          <div id="fileList" class="fileList"></div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button id="exportDB" class="btn muted">Exporter DB</button>
+            <input id="importFile" type="file" accept="application/json" style="display:none">
+            <button id="importDB" class="btn muted">Importer DB</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="margin-top:12px;color:rgba(255,255,255,0.7);font-size:13px">Sauvegarde locale automatique</div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    initPage('prof');
+  </script>
+</body>
+</html>
