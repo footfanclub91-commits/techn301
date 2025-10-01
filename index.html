@@ -1,317 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Techn301</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #3a7bd5, #3a6073);
-      color: #222;
-    }
-    .center { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      width: 320px;
-      text-align: center;
-    }
-    input, textarea {
-      display: block;
-      width: 100%;
-      margin: 8px 0;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      padding: 8px 14px;
-      margin: 4px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #3498db;
-      color: white;
-      font-weight: bold;
-    }
-    button:hover { background: #2980b9; }
-    button.muted { background: #bdc3c7; }
-    button.pill { border-radius: 50px; background: #e74c3c; }
-    .error { color: red; margin-top: 8px; }
-    header {
-      background: rgba(0,0,0,0.6);
-      color: white;
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .brand { display: flex; align-items: center; }
-    .logo {
-      background: #fff;
-      color: #000;
-      font-weight: bold;
-      padding: 5px 10px;
-      border-radius: 50%;
-      margin-right: 10px;
-    }
-    nav { display: flex; gap: 10px; align-items: center; }
-    .navRight { display: flex; gap: 10px; align-items: center; }
-    main { padding: 20px; }
-    .hidden { display: none; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 6px;
-      text-align: center;
-    }
-    .clock { font-size: 14px; margin-right: 20px; }
-    .chatbox {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: #fff;
-      padding: 10px;
-      height: 300px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-    }
-    .msg { margin: 5px 0; }
-    .msg span { font-weight: bold; margin-right: 5px; }
-    .msg.prof { color: #2c3e50; }
-    .msg.eleve { color: #16a085; }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Techn301 — Connexion</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- PAGE DE CONNEXION -->
-<div id="loginView" class="center">
-  <div class="card">
-    <h1>Connexion</h1>
-    <input id="loginId" placeholder="Identifiant">
-    <input id="loginPin" placeholder="PIN" type="password">
-    <button id="loginBtn">Se connecter</button>
-    <button id="demoBtn" class="muted">Démo</button>
-    <div id="loginError" class="error"></div>
-  </div>
-</div>
-
-<!-- BARRE DU HAUT -->
-<header id="topbar" class="hidden">
-  <div class="brand">
-    <div class="logo">T301</div>
-    <div class="title">Techn301</div>
-  </div>
-  <nav>
-    <button class="navBtn" data-view="dashboard">Tableau</button>
-    <button class="navBtn" data-view="notes">Notes</button>
-    <button class="navBtn" data-view="devoirs">Devoirs</button>
-    <button class="navBtn" data-view="cours">Cours</button>
-    <button class="navBtn" data-view="chat">Messagerie</button>
-    <div class="navRight">
-      <div class="clock" id="clock"></div>
-      <div id="userBadge"></div>
-      <button id="logoutBtn" class="pill">Déconnexion</button>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">T301</div>
+        <div style="color:white">
+          <div class="h-title">Techn301 — Connexion</div>
+          <div style="opacity:0.85;color:#e6eefc;font-size:13px">Interface Poppins • Synthèse vocale</div>
+        </div>
+      </div>
+      <div class="top-controls">
+        <div id="clock" class="clock">--/--/---- --:--:--</div>
+      </div>
     </div>
-  </nav>
-</header>
 
-<!-- CONTENU -->
-<main id="app" class="hidden">
+    <div class="card login-card">
+      <div class="h1">Se connecter</div>
+      <input id="loginId" class="input" placeholder="Identifiant (ex: e.benikiker)">
+      <input id="loginPin" class="input" placeholder="Code PIN" type="password">
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+        <button id="loginBtn" class="btn">Se connecter</button>
+        <button id="demoBtn" class="btn muted">Démo</button>
+      </div>
+      <div id="error" style="color:#ffb4b4;margin-top:10px"></div>
+      <div class="footer">Utilise ton identifiant tel que dans la liste fournie. Synthèse vocale activée.</div>
+    </div>
+  </div>
 
-  <!-- PROF -->
-  <section id="dashboardView" class="view hidden">
-    <h2>Tableau des élèves</h2>
-    <table id="studentsTable">
-      <thead>
-        <tr>
-          <th>Élève</th>
-          <th>Participation</th>
-          <th>Bavardage</th>
-          <th>Agitation</th>
-          <th>Lutin</th>
-          <th>Observations</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <!-- NOTES -->
-  <section id="notesView" class="view hidden">
-    <h2>Mes notes</h2>
-    <div id="notesContent"></div>
-  </section>
-
-  <!-- DEVOIRS -->
-  <section id="devoirsView" class="view hidden">
-    <h2>Devoirs</h2>
-    <div id="devoirsContent"></div>
-  </section>
-
-  <!-- COURS -->
-  <section id="coursView" class="view hidden">
-    <h2>Cours</h2>
-    <div id="coursContent"></div>
-  </section>
-
-  <!-- CHAT -->
-  <section id="chatView" class="view hidden">
-    <h2>Messagerie interne</h2>
-    <div class="chatbox" id="chatBox"></div>
-    <textarea id="chatInput" rows="2" placeholder="Écrire un message..."></textarea>
-    <button id="sendMsg">Envoyer</button>
-  </section>
-
-</main>
-
-<script>
-let currentUser = null;
-let chatMessages = JSON.parse(localStorage.getItem("chat")) || [];
-let notesData = JSON.parse(localStorage.getItem("notes")) || {};
-
-async function loadUsers() {
-  return {
-    "prof": [
-      { "id": "prof1", "name": "M. Dupont", "pin": "1234" }
-    ],
-    "eleves": [
-      { "id": "eleve1", "name": "Alice Martin", "pin": "1111" },
-      { "id": "eleve2", "name": "Yasser Benikiker", "pin": "2222" },
-      { "id": "eleve3", "name": "Lina Dubois", "pin": "3333" }
-    ]
-  };
-}
-
-document.getElementById("loginBtn").onclick = async () => {
-  const id = document.getElementById("loginId").value.trim();
-  const pin = document.getElementById("loginPin").value.trim();
-  const users = await loadUsers();
-  let user = users.prof.find(u => u.id === id && u.pin === pin);
-  let role = "prof";
-  if (!user) {
-    user = users.eleves.find(u => u.id === id && u.pin === pin);
-    role = "eleve";
-  }
-  if (user) {
-    currentUser = { id: user.id, name: user.name, role };
-    document.getElementById("loginView").classList.add("hidden");
-    document.getElementById("topbar").classList.remove("hidden");
-    document.getElementById("app").classList.remove("hidden");
-    document.getElementById("userBadge").innerText = user.name + " (" + role + ")";
-    if (role === "eleve") {
-      document.querySelectorAll(".navBtn").forEach(btn => {
-        if (!["notes","devoirs","cours","chat"].includes(btn.dataset.view)) btn.style.display = "none";
-      });
-      renderNotesForStudent();
-      showView("notes");
-    } else {
-      showView("dashboard");
-      fillStudentsTable(users.eleves);
-    }
-    renderChat();
-  } else {
-    document.getElementById("loginError").innerText = "Identifiant ou PIN incorrect";
-  }
-};
-
-document.getElementById("logoutBtn").onclick = () => { location.reload(); };
-
-function showView(view) {
-  document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
-  document.getElementById(view + "View").classList.remove("hidden");
-}
-document.querySelectorAll(".navBtn").forEach(btn => {
-  btn.onclick = () => {
-    if (btn.dataset.view === "notes" && currentUser.role === "eleve") {
-      renderNotesForStudent();
-    }
-    showView(btn.dataset.view);
-  };
-});
-
-function fillStudentsTable(eleves) {
-  const tbody = document.querySelector("#studentsTable tbody");
-  tbody.innerHTML = "";
-  eleves.forEach(e => {
-    let saved = notesData[e.id] || {};
-    let tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${e.name}</td>
-      <td><input type="number" min="0" max="20" value="${saved.participation||""}"></td>
-      <td><input type="number" min="0" max="20" value="${saved.bavardage||""}"></td>
-      <td><input type="number" min="0" max="20" value="${saved.agitation||""}"></td>
-      <td><input type="number" min="0" max="20" value="${saved.lutin||""}"></td>
-      <td><input type="text" value="${saved.obs||""}"></td>
-      <td><button>Enregistrer</button></td>
-    `;
-    tr.querySelector("button").onclick = () => {
-      notesData[e.id] = {
-        participation: tr.children[1].children[0].value,
-        bavardage: tr.children[2].children[0].value,
-        agitation: tr.children[3].children[0].value,
-        lutin: tr.children[4].children[0].value,
-        obs: tr.children[5].children[0].value
-      };
-      localStorage.setItem("notes", JSON.stringify(notesData));
-      alert("Notes enregistrées pour " + e.name);
-    };
-    tbody.appendChild(tr);
-  });
-}
-
-function renderNotesForStudent() {
-  let content = document.getElementById("notesContent");
-  let saved = notesData[currentUser.id];
-  if (!saved) {
-    content.innerHTML = "<p>Aucune note enregistrée.</p>";
-  } else {
-    content.innerHTML = `
-      <p><b>Participation :</b> ${saved.participation||"-"}</p>
-      <p><b>Bavardage :</b> ${saved.bavardage||"-"}</p>
-      <p><b>Agitation :</b> ${saved.agitation||"-"}</p>
-      <p><b>Lutin :</b> ${saved.lutin||"-"}</p>
-      <p><b>Observation :</b> ${saved.obs||"-"}</p>
-    `;
-  }
-}
-
-function updateClock() {
-  const now = new Date();
-  document.getElementById("clock").innerText =
-    now.toLocaleDateString("fr-FR") + " " + now.toLocaleTimeString("fr-FR");
-}
-setInterval(updateClock, 1000);
-
-function renderChat() {
-  const chatBox = document.getElementById("chatBox");
-  chatBox.innerHTML = "";
-  chatMessages.forEach(msg => {
-    let div = document.createElement("div");
-    div.className = "msg " + msg.role;
-    div.innerHTML = `<span>${msg.name}:</span> ${msg.text}`;
-    chatBox.appendChild(div);
-  });
-  chatBox.scrollTop = chatBox.scrollHeight;
-  localStorage.setItem("chat", JSON.stringify(chatMessages));
-}
-
-document.getElementById("sendMsg").onclick = () => {
-  const text = document.getElementById("chatInput").value.trim();
-  if (text && currentUser) {
-    chatMessages.push({ name: currentUser.name, role: currentUser.role, text });
-    document.getElementById("chatInput").value = "";
-    renderChat();
-  }
-};
-</script>
+  <script src="app.js"></script>
+  <script>
+    updateClock();
+    setInterval(updateClock,1000);
+    document.getElementById('loginBtn').addEventListener('click',async()=>{
+      const id=document.getElementById('loginId').value.trim();
+      const pin=document.getElementById('loginPin').value.trim();
+      const ok = await attemptLogin(id,pin);
+      if(!ok) document.getElementById('error').innerText='Identifiant ou PIN incorrect';
+    });
+    document.getElementById('demoBtn').addEventListener('click',()=>attemptLogin('admindemo','2812'));
+  </script>
 </body>
 </html>
