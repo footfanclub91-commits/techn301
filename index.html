@@ -1,9 +1,199 @@
-Maintenance
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Techn301 — Connexion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-Aout de fonctionnalité a l'espace Professeur durant 5 jours
+<header id="topbar" class="hidden">
+  <div class="brand">
+    <div class="logo">T301</div>
+    <div class="title">Techn301 — Collège Charles Péguy</div>
+  </div>
+  <nav class="nav">
+    <button class="navBtn" data-view="dashboard">Élèves</button>
+    <button class="navBtn" data-view="notes">Notes</button>
+    <button class="navBtn" data-view="devoirs">Cahier & Devoirs</button>
+    <button class="navBtn" data-view="cours">Cours</button>
+    <div class="navRight">
+      <div id="userBadge"></div>
+      <button id="logoutBtn" class="pill">Se déconnecter</button>
+    </div>
+  </nav>
+</header>
 
-Fonctionnalités:
+<main id="app" class="main hidden">
+  <section id="loginView" class="view center">
+    <div class="card narrow">
+      <h1>Connexion</h1>
+      <input id="loginId" placeholder="Identifiant" />
+      <input id="loginPin" placeholder="PIN" type="password" />
+      <div class="row">
+        <button id="loginBtn" class="cta">Se connecter</button>
+        <button id="demoBtn" class="muted">Démo</button>
+      </div>
+      <div id="loginError" class="error"></div>
+    </div>
+  </section>
 
-Vue des notes et moyenne générale
-gestion des devoirs et cntenu du cours
-Réorganisation de l'espace prof et élève avec une UI plus lisible
+  <section id="dashboardView" class="view hidden">
+    <div class="panel">
+      <div class="panelHeader">
+        <h2>Tableau des élèves</h2>
+        <input id="searchStudent" placeholder="Rechercher élève..." />
+      </div>
+      <div class="tableWrap">
+        <table id="studentsTable">
+          <thead>
+            <tr>
+              <th>Élève</th>
+              <th>Participation</th>
+              <th>Bavardages</th>
+              <th>Agitation</th>
+              <th>Observations</th>
+              <th>Total</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="notesView" class="view hidden">
+    <div class="panel">
+      <div class="panelHeader">
+        <h2>Notes & Moyennes</h2>
+        <button id="addNoteBtn" class="small">Ajouter note (prof)</button>
+      </div>
+      <div id="notesContent" class="stack"></div>
+    </div>
+  </section>
+
+  <section id="devoirsView" class="view hidden">
+    <div class="panel">
+      <div class="panelHeader">
+        <h2>Cahier & Devoirs</h2>
+        <button id="addDevoirBtn" class="small">Ajouter devoir</button>
+      </div>
+      <div id="devoirsList" class="stack"></div>
+    </div>
+  </section>
+
+  <section id="coursView" class="view hidden">
+    <div class="panel">
+      <div class="panelHeader">
+        <h2>Contenu du cours</h2>
+        <button id="addCoursBtn" class="small">Ajouter contenu</button>
+      </div>
+      <div id="coursList" class="stack"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const RAW = 'users.json';
+let USERS = { eleves: [], prof: [] };
+let STATE = { students: {}, notes: {}, devoirs: [], cours: [] };
+let CURRENT = null;
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function showView(id){
+  $$('.view').forEach(v=>v.classList.add('hidden'));
+  $('#'+id).classList.remove('hidden');
+  $$('.navBtn').forEach(b=>b.classList.remove('active'));
+  $(`.navBtn[data-view="${id.replace('View','')}"]`)?.classList.add('active');
+}
+
+async function loadUsers(){
+  const r = await fetch(RAW);
+  USERS = await r.json();
+  USERS.eleves.forEach(e=>{
+    if(!STATE.students[e.id]) STATE.students[e.id]={ participation:0, bav:0, agi:0, obs:[] };
+    if(!STATE.notes[e.id]) STATE.notes[e.id]=[];
+  });
+  showView('loginView');
+}
+
+function loginFlow(){
+  $('#loginBtn').onclick = ()=>{
+    const id = $('#loginId').value.trim();
+    const pin = $('#loginPin').value.trim();
+    const user = USERS.eleves.find(u=>u.id===id && u.pin===pin) || USERS.prof.find(u=>u.id===id && u.pin===pin);
+    if(!user){ $('#loginError').textContent='Identifiant ou PIN incorrect'; return; }
+    CURRENT = user;
+    $('#userBadge').textContent = user.name;
+    $('#loginError').textContent='';
+    $('#topbar').classList.remove('hidden');
+    $('#app').classList.remove('hidden');
+    if(USERS.prof.some(p=>p.id===user.id)){ enableProfMode(); showView('dashboardView'); renderStudents(); }
+    else { enableEleveMode(); showView('notesView'); renderEleveNotes(); }
+  };
+  $('#demoBtn').onclick=()=>{ if(USERS.prof[0]){ CURRENT=USERS.prof[0]; $('#userBadge').textContent=CURRENT.name; enableProfMode(); showView('dashboardView'); renderStudents(); } };
+}
+
+function enableProfMode(){
+  $('#addNoteBtn').style.display='inline-block';
+  $('#addDevoirBtn').style.display='inline-block';
+  $('#addCoursBtn').style.display='inline-block';
+}
+
+function enableEleveMode(){
+  $('#addNoteBtn').style.display='none';
+  $('#addDevoirBtn').style.display='none';
+  $('#addCoursBtn').style.display='none';
+}
+
+function renderStudents(filter=''){
+  const tbody=$('#studentsTable tbody'); tbody.innerHTML='';
+  USERS.eleves.forEach(e=>{
+    if(filter && !e.name.toLowerCase().includes(filter.toLowerCase())) return;
+    const s=STATE.students[e.id];
+    const total=(s.bav||0)+(s.agi||0);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${e.name}</td>
+      <td>${s.participation}</td>
+      <td>${s.bav}</td>
+      <td>${s.agi}</td>
+      <td>${s.obs.join('<br>')}</td>
+      <td>${total}</td>
+      <td class="${total>=3?'warn':'ok'}">${total>=3?'⚠ Colle':'OK'}</td>
+      <td><button onclick="addObs('${e.id}')">+ Obs</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function addObs(id){
+  const txt=prompt("Nouvelle observation :");
+  if(!txt) return;
+  STATE.students[id].obs.push(txt);
+  renderStudents();
+}
+
+function renderEleveNotes(){
+  const cont=$('#notesContent');
+  cont.innerHTML='';
+  if(USERS.eleves.some(x=>x.id===CURRENT.id)){
+    const arr=STATE.notes[CURRENT.id]||[];
+    const moy=arr.length?(arr.reduce((a,b)=>a+b.val,0)/arr.length).toFixed(2):'—';
+    cont.innerHTML=`<div class="noteCard"><strong>Mes notes</strong><span>Moyenne: ${moy}</span><div>${arr.map(n=>`${n.nom} — ${n.val}/20`).join('<br>')}</div></div>`;
+  }
+}
+
+$('#searchStudent')?.addEventListener('input',()=>renderStudents($('#searchStudent').value));
+$('#logoutBtn').onclick=()=>location.reload();
+
+loadUsers();
+loginFlow();
+</script>
+
+</body>
+</html>
