@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Techn301 | Mes Applications</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="glass-bg">
+  <header>
+    <h1>Mes Applications</h1>
+    <button id="logoutBtn">Déconnexion</button>
+  </header>
+
+  <main class="apps-grid" id="appsContainer"></main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const user = await getCurrentUser();
+      if (!user) return (window.location.href = "index.html");
+      const role = await getUserRole(user.id);
+
+      const appsContainer = document.getElementById("appsContainer");
+      const baseApps = [
+        { name: "Révisions interactives", link: "#", icon: "📘" },
+        { name: "Gestion des notes", link: "#", icon: "📊" },
+        { name: "Messagerie", link: "messagerie.html", icon: "💬" },
+        { name: "Signalements", link: "maintenance.html", icon: "⚠️" }
+      ];
+
+      if (role === "teacher" || role === "admin")
+        baseApps.push({ name: "Outils du professeur", link: "#", icon: "🧰" });
+
+      if (role === "admin")
+        baseApps.push({ name: "Mise en maintenance", link: "maintenance.html", icon: "🛠️" });
+
+      appsContainer.innerHTML = baseApps
+        .map(a => `<a href="${a.link}" class="app-card">${a.icon}<span>${a.name}</span></a>`)
+        .join("");
+    });
+  </script>
+</body>
+</html>

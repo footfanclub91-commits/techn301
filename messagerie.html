@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Techn301 | Messagerie</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="glass-bg">
+  <header>
+    <h1>Messagerie</h1>
+    <button onclick="window.location.href='dashboard.html'">⬅ Retour</button>
+  </header>
+
+  <main class="chat-container">
+    <div id="messages"></div>
+    <div class="chat-input">
+      <input type="text" id="msgInput" placeholder="Écrire un message..." />
+      <input type="file" id="fileInput" />
+      <button id="sendBtn">Envoyer</button>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const user = await getCurrentUser();
+      if (!user) return (window.location.href = "index.html");
+      const userId = user.id;
+
+      const { data } = await supabase.from("messages").select("*").order("created_at", { ascending: true });
+      renderMessages(data);
+
+      supabase.channel("realtime:messages")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+          appendMessage(payload.new);
+        })
+        .subscribe();
+
+      document.getElementById("sendBtn").onclick = async () => {
+        const text = document.getElementById("msgInput").value.trim();
+        const file = document.getElementById("fileInput").files[0];
+        let filePath = null, fileType = null;
+
+        if (file) {
+          const { data, error } = await supabase.storage.from("uploads")
+            .upload(`chat/${Date.now()}_${file.name}`, file);
+          if (!error) filePath = data.path, fileType = file.type;
+        }
+
+        await supabase.from("messages").insert({
+          sender_id: userId,
+          sender_name: user.email,
+          content: text,
+          file_path: filePath,
+          file_type: fileType
+        });
+
+        document.getElementById("msgInput").value = "";
+        document.getElementById("fileInput").value = "";
+      };
+    });
+
+    function renderMessages(list) {
+      const msgDiv = document.getElementById("messages");
+      msgDiv.innerHTML = list.map(m => formatMsg(m)).join("");
+    }
+
+    function appendMessage(m) {
+      document.getElementById("messages").innerHTML += formatMsg(m);
+    }
+
+    function formatMsg(m) {
+      let fileEl = "";
+      if (m.file_path) {
+        if (m.file_type.startsWith("image")) fileEl = `<img src="${supabase.storage.from('uploads').getPublicUrl(m.file_path).data.publicUrl}" class='chat-img' />`;
+        else if (m.file_type.startsWith("video")) fileEl = `<video controls src="${supabase.storage.from('uploads').getPublicUrl(m.file_path).data.publicUrl}" class='chat-vid'></video>`;
+        else fileEl = `<a href="${supabase.storage.from('uploads').getPublicUrl(m.file_path).data.publicUrl}" target="_blank">📎 Fichier</a>`;
+      }
+      return `<div class="msg"><b>${m.sender_name}:</b> ${m.content || ""} ${fileEl}</div>`;
+    }
+  </script>
+</body>
+</html>
