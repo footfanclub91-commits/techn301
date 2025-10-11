@@ -1,45 +1,135 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Techn301 | Mes Applications</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Techn301 — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="glass-bg">
-  <header>
-    <h1>Mes Applications</h1>
-    <button id="logoutBtn">Déconnexion</button>
-  </header>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar glass-card">
+      <div class="side-brand">
+        <div class="logo-small">TECHN301</div>
+        <div id="profileName" class="muted small">Chargement…</div>
+        <div id="userRole" class="muted small">—</div>
+      </div>
 
-  <main class="apps-grid" id="appsContainer"></main>
+      <nav class="side-nav">
+        <button class="nav-btn active" data-view="home">Accueil</button>
+        <button class="nav-btn" data-view="revisions">Révisions</button>
+        <button class="nav-btn" data-view="notes">Notes & Devoirs</button>
+        <button class="nav-btn" data-view="messagerie">Messagerie</button>
+        <button class="nav-btn" data-view="tools">Outils prof</button>
+        <button class="nav-btn" data-view="reports">Signalements</button>
+        <button class="nav-btn" data-view="admin">Admin</button>
+        <button id="signOutBtn" class="nav-btn ghost">Déconnexion</button>
+      </nav>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const user = await getCurrentUser();
-      if (!user) return (window.location.href = "index.html");
-      const role = await getUserRole(user.id);
+      <div class="side-foot muted small">Techn301 · Glass UI</div>
+    </aside>
 
-      const appsContainer = document.getElementById("appsContainer");
-      const baseApps = [
-        { name: "Révisions interactives", link: "#", icon: "📘" },
-        { name: "Gestion des notes", link: "#", icon: "📊" },
-        { name: "Messagerie", link: "messagerie.html", icon: "💬" },
-        { name: "Signalements", link: "maintenance.html", icon: "⚠️" }
-      ];
+    <main class="main glass-panel">
+      <header class="main-header">
+        <div>
+          <h2 id="welcomeTitle">Bonjour</h2>
+          <div id="welcomeSub" class="muted">Chargement du profil…</div>
+        </div>
+        <div class="header-actions">
+          <button id="appsBtn" class="btn ghost">Mes applications</button>
+        </div>
+      </header>
 
-      if (role === "teacher" || role === "admin")
-        baseApps.push({ name: "Outils du professeur", link: "#", icon: "🧰" });
+      <!-- VUES -->
+      <section id="view-home" class="view active">
+        <h3>Mes applications</h3>
+        <div class="apps-grid" id="appsGrid"></div>
+      </section>
 
-      if (role === "admin")
-        baseApps.push({ name: "Mise en maintenance", link: "maintenance.html", icon: "🛠️" });
+      <section id="view-revisions" class="view hidden">
+        <h3>Révisions interactives</h3>
+        <div id="revisionCards" class="card-list"></div>
 
-      appsContainer.innerHTML = baseApps
-        .map(a => `<a href="${a.link}" class="app-card">${a.icon}<span>${a.name}</span></a>`)
-        .join("");
-    });
-  </script>
+        <div class="card" style="margin-top:12px">
+          <input id="revTitle" placeholder="Titre de la fiche" class="input" />
+          <textarea id="revContent" placeholder="Contenu (énoncé / questions séparées par une ligne)" class="input" style="height:110px"></textarea>
+          <div style="margin-top:8px"><button id="createRev" class="btn">Créer fiche (prof)</button></div>
+        </div>
+      </section>
+
+      <section id="view-notes" class="view hidden">
+        <h3>Notes & Devoirs</h3>
+        <div id="evaluationsList" class="card-list"></div>
+
+        <div class="card" style="margin-top:12px">
+          <input id="evTitle" placeholder="Titre évaluation" class="input" />
+          <input id="evDate" type="date" class="input" />
+          <div style="margin-top:8px"><button id="createEvalBtn" class="btn">Créer évaluation</button></div>
+        </div>
+      </section>
+
+      <section id="view-messagerie" class="view hidden">
+        <h3>Messagerie instantanée</h3>
+        <div class="chat-grid">
+          <div class="chat-list card">
+            <div id="conversationsList" class="muted small">Canal : Général</div>
+          </div>
+
+          <div class="chat-main card">
+            <div id="messages" class="messages"></div>
+
+            <div class="compose">
+              <input id="msgInput" class="input" placeholder="Écrire un message..." />
+              <input type="file" id="fileInput" class="hidden" />
+              <div class="compose-actions">
+                <button id="attachBtn" class="btn ghost">Joindre</button>
+                <button id="recordBtn" class="btn ghost">🎤</button>
+                <button id="sendBtn" class="btn">Envoyer</button>
+              </div>
+            </div>
+
+            <div id="attachmentPreview" class="attachment-preview"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-tools" class="view hidden">
+        <h3>Outils du professeur</h3>
+        <div id="teacherTools" class="card-list"></div>
+        <div class="card" style="margin-top:12px">
+          <p class="muted">Importer élèves (CSV) — utiliser le script service_role recommandé.</p>
+        </div>
+      </section>
+
+      <section id="view-reports" class="view hidden">
+        <h3>Signalements</h3>
+        <textarea id="reportText" class="input" placeholder="Décrire le problème..."></textarea>
+        <div style="margin-top:8px"><button id="sendReport" class="btn">Envoyer signalement</button></div>
+        <div id="reportsList" class="card-list" style="margin-top:12px"></div>
+      </section>
+
+      <section id="view-admin" class="view hidden">
+        <h3>Administration</h3>
+        <div id="adminUsers" class="card-list"></div>
+        <div style="margin-top:12px" class="card">
+          <p class="muted">Créer/supprimer des users via script côté serveur. Ici : visualisation des profils.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- popup -->
+  <div id="popup" class="popup hidden">
+    <div class="glass-popup">
+      <h3 id="popup-title"></h3>
+      <p id="popup-text"></p>
+      <div style="margin-top:12px"><button id="popup-ok" class="btn">OK</button></div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>
