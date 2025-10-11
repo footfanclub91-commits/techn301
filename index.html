@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
   <div class="login-container glass-card">
     <h1>Techn301</h1>
     <p>Espace sécurisé</p>
@@ -19,8 +20,15 @@
       <input type="password" id="password" placeholder="Code PIN" required>
       <button type="submit">Se connecter</button>
     </form>
+  </div>
 
-    <div id="message" class="message"></div>
+  <!-- Popup Glass -->
+  <div id="popup" class="popup hidden">
+    <div class="popup-card glass-popup">
+      <h2 id="popup-title"></h2>
+      <p id="popup-message"></p>
+      <button id="popup-close">OK</button>
+    </div>
   </div>
 
   <script type="module" src="app.js"></script>
