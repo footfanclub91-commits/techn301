@@ -1,135 +1,200 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Techn301 — Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Techn301 - Tableau de bord</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --glass-bg: rgba(20, 20, 30, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --text-color: #f0f0f0;
+      --accent: #4f8bff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      background: radial-gradient(circle at top left, #0a0f1e, #111827);
+      color: var(--text-color);
+      overflow: hidden;
+    }
+
+    /* Barre latérale */
+    .sidebar {
+      width: 260px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 0;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      color: var(--accent);
+    }
+
+    .nav {
+      width: 100%;
+    }
+
+    .nav button {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1rem;
+      text-align: left;
+      padding: 1rem 2rem;
+      transition: 0.3s;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .nav button:hover, .nav button.active {
+      background: rgba(255,255,255,0.1);
+      color: var(--accent);
+    }
+
+    /* Contenu principal */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      backdrop-filter: blur(20px);
+    }
+
+    .card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+    }
+
+    .card h2 {
+      color: var(--accent);
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .card p {
+      color: #ccc;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 70px;
+      }
+      .nav button {
+        justify-content: center;
+        padding: 1rem;
+      }
+      .nav button span {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar glass-card">
-      <div class="side-brand">
-        <div class="logo-small">TECHN301</div>
-        <div id="profileName" class="muted small">Chargement…</div>
-        <div id="userRole" class="muted small">—</div>
-      </div>
-
-      <nav class="side-nav">
-        <button class="nav-btn active" data-view="home">Accueil</button>
-        <button class="nav-btn" data-view="revisions">Révisions</button>
-        <button class="nav-btn" data-view="notes">Notes & Devoirs</button>
-        <button class="nav-btn" data-view="messagerie">Messagerie</button>
-        <button class="nav-btn" data-view="tools">Outils prof</button>
-        <button class="nav-btn" data-view="reports">Signalements</button>
-        <button class="nav-btn" data-view="admin">Admin</button>
-        <button id="signOutBtn" class="nav-btn ghost">Déconnexion</button>
-      </nav>
-
-      <div class="side-foot muted small">Techn301 · Glass UI</div>
-    </aside>
-
-    <main class="main glass-panel">
-      <header class="main-header">
-        <div>
-          <h2 id="welcomeTitle">Bonjour</h2>
-          <div id="welcomeSub" class="muted">Chargement du profil…</div>
-        </div>
-        <div class="header-actions">
-          <button id="appsBtn" class="btn ghost">Mes applications</button>
-        </div>
-      </header>
-
-      <!-- VUES -->
-      <section id="view-home" class="view active">
-        <h3>Mes applications</h3>
-        <div class="apps-grid" id="appsGrid"></div>
-      </section>
-
-      <section id="view-revisions" class="view hidden">
-        <h3>Révisions interactives</h3>
-        <div id="revisionCards" class="card-list"></div>
-
-        <div class="card" style="margin-top:12px">
-          <input id="revTitle" placeholder="Titre de la fiche" class="input" />
-          <textarea id="revContent" placeholder="Contenu (énoncé / questions séparées par une ligne)" class="input" style="height:110px"></textarea>
-          <div style="margin-top:8px"><button id="createRev" class="btn">Créer fiche (prof)</button></div>
-        </div>
-      </section>
-
-      <section id="view-notes" class="view hidden">
-        <h3>Notes & Devoirs</h3>
-        <div id="evaluationsList" class="card-list"></div>
-
-        <div class="card" style="margin-top:12px">
-          <input id="evTitle" placeholder="Titre évaluation" class="input" />
-          <input id="evDate" type="date" class="input" />
-          <div style="margin-top:8px"><button id="createEvalBtn" class="btn">Créer évaluation</button></div>
-        </div>
-      </section>
-
-      <section id="view-messagerie" class="view hidden">
-        <h3>Messagerie instantanée</h3>
-        <div class="chat-grid">
-          <div class="chat-list card">
-            <div id="conversationsList" class="muted small">Canal : Général</div>
-          </div>
-
-          <div class="chat-main card">
-            <div id="messages" class="messages"></div>
-
-            <div class="compose">
-              <input id="msgInput" class="input" placeholder="Écrire un message..." />
-              <input type="file" id="fileInput" class="hidden" />
-              <div class="compose-actions">
-                <button id="attachBtn" class="btn ghost">Joindre</button>
-                <button id="recordBtn" class="btn ghost">🎤</button>
-                <button id="sendBtn" class="btn">Envoyer</button>
-              </div>
-            </div>
-
-            <div id="attachmentPreview" class="attachment-preview"></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-tools" class="view hidden">
-        <h3>Outils du professeur</h3>
-        <div id="teacherTools" class="card-list"></div>
-        <div class="card" style="margin-top:12px">
-          <p class="muted">Importer élèves (CSV) — utiliser le script service_role recommandé.</p>
-        </div>
-      </section>
-
-      <section id="view-reports" class="view hidden">
-        <h3>Signalements</h3>
-        <textarea id="reportText" class="input" placeholder="Décrire le problème..."></textarea>
-        <div style="margin-top:8px"><button id="sendReport" class="btn">Envoyer signalement</button></div>
-        <div id="reportsList" class="card-list" style="margin-top:12px"></div>
-      </section>
-
-      <section id="view-admin" class="view hidden">
-        <h3>Administration</h3>
-        <div id="adminUsers" class="card-list"></div>
-        <div style="margin-top:12px" class="card">
-          <p class="muted">Créer/supprimer des users via script côté serveur. Ici : visualisation des profils.</p>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- popup -->
-  <div id="popup" class="popup hidden">
-    <div class="glass-popup">
-      <h3 id="popup-title"></h3>
-      <p id="popup-text"></p>
-      <div style="margin-top:12px"><button id="popup-ok" class="btn">OK</button></div>
+  <div class="sidebar">
+    <div class="logo">Techn301</div>
+    <div class="nav">
+      <button class="active" data-page="home">🏠 <span>Accueil</span></button>
+      <button data-page="revisions">📚 <span>Révisions</span></button>
+      <button data-page="notes">🧾 <span>Notes</span></button>
+      <button data-page="messagerie">💬 <span>Messagerie</span></button>
+      <button data-page="signalements">⚠️ <span>Signalements</span></button>
+      <button data-page="maintenance">🛠️ <span>Outils Prof</span></button>
     </div>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <div class="main-content" id="content">
+    <!-- Le contenu changera ici -->
+    <div class="card">
+      <h2>Bienvenue sur Techn301</h2>
+      <p>Sélectionne une section dans le menu latéral pour commencer.</p>
+    </div>
+  </div>
+
+  <script>
+    const content = document.getElementById('content');
+    const buttons = document.querySelectorAll('.nav button');
+
+    const pages = {
+      home: `
+        <div class="card">
+          <h2>Tableau de bord</h2>
+          <p>Bienvenue sur ton espace personnel Techn301. Ici tu retrouveras tes outils d’élève ou de professeur.</p>
+        </div>
+      `,
+      revisions: `
+        <div class="card">
+          <h2>Révisions interactives</h2>
+          <p>Crée, révise et participe à des quiz ou fiches de révisions.</p>
+        </div>
+      `,
+      notes: `
+        <div class="card">
+          <h2>Gestion des notes</h2>
+          <p>Visualise tes moyennes, tes devoirs et les retours des professeurs.</p>
+        </div>
+      `,
+      messagerie: `
+        <div class="card">
+          <h2>Messagerie instantanée</h2>
+          <p>Discute avec tes camarades et professeurs. Les messages apparaîtront ici.</p>
+        </div>
+      `,
+      signalements: `
+        <div class="card">
+          <h2>Signalements</h2>
+          <p>Signale un problème technique ou une erreur dans une note ici.</p>
+        </div>
+      `,
+      maintenance: `
+        <div class="card">
+          <h2>Outils du professeur</h2>
+          <p>Création d’évaluations, gestion des élèves, et suivi des révisions.</p>
+        </div>
+      `
+    };
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const page = btn.getAttribute('data-page');
+        content.innerHTML = pages[page];
+      });
+    });
+  </script>
 </body>
 </html>
+
